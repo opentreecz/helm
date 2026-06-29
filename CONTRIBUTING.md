@@ -40,6 +40,17 @@ helm lint charts/<chart-name>
 helm template charts/<chart-name>
 ```
 
+Run the chart unit tests (templates rendered and asserted with
+[helm-unittest](https://github.com/helm-unittest/helm-unittest)):
+
+```bash
+helm plugin install https://github.com/helm-unittest/helm-unittest
+helm unittest charts/<chart-name>
+```
+
+Add test suites under `charts/<chart-name>/tests/*_test.yaml`. They run on every
+pull request via the **Lint and Test Charts** workflow.
+
 Run the full chart-testing suite (requires
 [chart-testing](https://github.com/helm/chart-testing) and a Kubernetes
 cluster such as [kind](https://kind.sigs.k8s.io)):

@@ -24,8 +24,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.x'
-          check-latest: true
+          # chart-testing bundles a yamale version that relies on ast.Num,
+          # which was removed in Python 3.12. Pin to 3.11 so `ct lint` works.
+          python-version: '3.11'
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.8.0
@@ -49,3 +50,33 @@ jobs:
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --config ct.yaml
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+
+      - name: Install helm-unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.1.1
+
+      - name: Run helm unit tests
+        run: |
+          set -euo pipefail
+          ran=0
+          for chart in charts/*/; do
+            if [ -d "${chart}tests" ]; then
+              echo "::group::unittest ${chart}"
+              helm unittest "$chart"
+              echo "::endgroup::"
+              ran=1
+            fi
+          done
+          if [ "$ran" -eq 0 ]; then
+            echo "No chart unit tests found."
+          fi

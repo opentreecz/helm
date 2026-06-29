@@ -1,0 +1,61 @@
+suite: example-app deployment
+templates:
+  - deployment.yaml
+release:
+  name: my-release
+  namespace: test-ns
+tests:
+  - it: renders a Deployment with the expected fullname
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: my-release-example-app
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: example-app
+
+  - it: uses replicaCount when autoscaling is disabled
+    set:
+      replicaCount: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: omits replicas when autoscaling is enabled
+    set:
+      autoscaling.enabled: true
+    asserts:
+      - isNull:
+          path: spec.replicas
+
+  - it: defaults the image tag to the chart appVersion
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:1.0.0
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: IfNotPresent
+
+  - it: honours an explicit image repository and tag
+    set:
+      image.repository: ghcr.io/opentreecz/example
+      image.tag: "1.2.3"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/opentreecz/example:1.2.3
+
+  - it: exposes the container port from service.port
+    set:
+      service.port: 8080
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8080
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].name
+          value: http

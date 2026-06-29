@@ -1,0 +1,43 @@
+suite: example-app service
+templates:
+  - service.yaml
+release:
+  name: my-release
+tests:
+  - it: renders a ClusterIP service on port 80 by default
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: ClusterIP
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+      - equal:
+          path: spec.ports[0].name
+          value: http
+
+  - it: honours service type and port overrides
+    set:
+      service.type: NodePort
+      service.port: 8080
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+
+  - it: selects pods using the instance selector labels
+    asserts:
+      - equal:
+          path: spec.selector["app.kubernetes.io/name"]
+          value: example-app
+      - equal:
+          path: spec.selector["app.kubernetes.io/instance"]
+          value: my-release
