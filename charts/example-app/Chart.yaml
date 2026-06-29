@@ -1,0 +1,21 @@
+apiVersion: v2
+name: example-app
+description: A starter Helm chart for deploying a generic web application on Kubernetes
+type: application
+
+# version is the chart version. Bump this on every change to the chart (SemVer).
+version: 0.1.0
+
+# appVersion is the version of the application contained in the chart.
+appVersion: "1.0.0"
+
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/opentreecz/helm
+
+maintainers:
+  - name: opentreecz
+
+keywords:
+  - example
+  - web

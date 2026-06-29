@@ -1,0 +1,9 @@
+# Values used by chart-testing (ct) when installing the chart in CI.
+# Override defaults here to exercise non-default code paths.
+ingress:
+  enabled: true
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
