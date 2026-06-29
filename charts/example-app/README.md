@@ -47,7 +47,16 @@ helm install my-release opentree/example-app -f my-values.yaml
 ## Testing
 
 ```bash
+# Static checks
 helm lint charts/example-app
 helm template charts/example-app
+
+# Unit tests (requires the helm-unittest plugin)
+helm plugin install https://github.com/helm-unittest/helm-unittest
+helm unittest charts/example-app
+
+# Smoke test a live release
 helm test my-release
 ```
+
+Unit test suites live in [`tests/`](./tests) and are run automatically in CI.

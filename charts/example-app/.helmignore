@@ -23,3 +23,5 @@
 .vscode/
 # CI
 ci/
+# helm-unittest suites (anchored to the chart root so templates/tests is kept)
+/tests/
