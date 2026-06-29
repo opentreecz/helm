@@ -44,11 +44,53 @@ helm install my-release opentree/example-app
 .
 ├── charts/                  # One directory per chart
 │   └── example-app/         # Example/starter chart
+├── scripts/
+│   └── bump-chart-versions.sh  # Auto-bump helper used by the release workflow
 ├── ct.yaml                  # chart-testing configuration
-└── .github/workflows/
-    ├── lint-test.yaml       # Lint + install test on pull requests
-    └── release.yaml         # Package + publish on push to main
+└── .github/
+    ├── dependabot.yml       # Weekly updates for GitHub Actions
+    └── workflows/
+        ├── lint-test.yaml   # Lint + kind install test on pull requests
+        ├── build.yaml       # Weekly scheduled build of all charts
+        └── release.yaml     # Auto-version, package + publish on push to main
 ```
+
+## Automation
+
+This repository is fully automated via GitHub Actions:
+
+| Workflow                 | Trigger                          | What it does                                                                 |
+| ------------------------ | -------------------------------- | --------------------------------------------------------------------------- |
+| **Lint and Test**        | Pull requests touching `charts/` | Lints changed charts and installs them into a [kind](https://kind.sigs.k8s.io) cluster. |
+| **Scheduled Build**      | Weekly (Mon 06:00 UTC) + manual  | Lints, templates and packages **all** charts with the latest Helm to catch drift. |
+| **Release Charts**       | Push to `main` touching `charts/` + manual | Auto-bumps chart versions, then packages and publishes via [chart-releaser](https://github.com/helm/chart-releaser-action). |
+| **Dependabot**           | Weekly                           | Opens PRs to keep the GitHub Actions used in these workflows up to date.     |
+
+### Versioning (auto-bump)
+
+You do **not** need to bump a chart's `version` manually. When a change to a
+chart lands on `main`, the release workflow runs
+[`scripts/bump-chart-versions.sh`](./scripts/bump-chart-versions.sh), which:
+
+- detects every chart whose files changed in the push, and
+- increments its patch version (e.g. `0.1.0` → `0.1.1`) **unless** you already
+  bumped it in the same change — manual `minor`/`major` bumps are respected.
+
+The bump is committed back to `main` as `chore(release): auto-bump chart
+versions [skip ci]`, and the new version is released immediately afterward.
+
+### Update procedure
+
+- **GitHub Actions** are updated automatically by Dependabot
+  ([`.github/dependabot.yml`](./.github/dependabot.yml)) — review and merge the
+  weekly PRs.
+- **Helm version** is pinned in the workflows (`azure/setup-helm`). Bump it
+  there when you want to adopt a newer Helm.
+- **Chart application versions** (`appVersion`) and any chart dependencies are
+  updated by editing the chart and opening a PR; the auto-bump then takes care
+  of the chart `version`. (Dependabot does not track Helm subchart
+  dependencies; if you add them, consider a scheduled `helm dependency update`
+  workflow.)
 
 ## Developing Charts
 
