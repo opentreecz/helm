@@ -22,9 +22,13 @@ Thanks for contributing to the opentree Helm chart repository.
 ## Versioning
 
 - Every chart follows [Semantic Versioning](https://semver.org).
-- **You must bump the `version` field in `Chart.yaml` for any change to a
-  chart.** CI enforces this (`check-version-increment`), and the release
-  workflow only publishes a new package when the chart version changes.
+- **Patch bumps are automatic.** When your change lands on `main`, the release
+  workflow auto-increments the chart `version` (e.g. `0.1.0` → `0.1.1`) for
+  every chart you touched. You do not need to edit `version` for routine
+  changes.
+- **Bump `version` yourself for `minor`/`major` changes** (new features or
+  breaking changes). A manual bump in your PR is respected and the auto-bump is
+  skipped for that chart.
 - Bump `appVersion` when the version of the packaged application changes.
 
 ## Testing locally
@@ -52,5 +56,8 @@ To exercise non-default paths during `ct install`, add values files under
 
 - Open a pull request against `main`.
 - The **Lint and Test Charts** workflow runs automatically on changed charts.
-- On merge to `main`, the **Release Charts** workflow packages changed charts
-  and publishes them to GitHub Pages.
+- On merge to `main`, the **Release Charts** workflow auto-bumps versions,
+  packages changed charts and publishes them to GitHub Pages.
+
+See the [README automation section](./README.md#automation) for the full list
+of workflows (including the weekly scheduled build and Dependabot updates).

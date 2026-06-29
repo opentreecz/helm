@@ -5,5 +5,7 @@ target-branch: main
 chart-dirs:
   - charts
 helm-extra-args: --timeout 600s
-check-version-increment: true
+# Versioning is handled automatically by the release workflow (auto-bump),
+# so we don't force contributors to bump the chart version in their PRs.
+check-version-increment: false
 validate-maintainers: false

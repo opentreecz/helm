@@ -6,11 +6,17 @@ on:
       - main
     paths:
       - 'charts/**'
+  workflow_dispatch:
 
-# Permissions required by chart-releaser to push the gh-pages branch and
-# create GitHub releases.
+# Permissions required to auto-commit version bumps, push the gh-pages branch,
+# and create GitHub releases.
 permissions:
   contents: write
+
+# Avoid concurrent releases racing on the gh-pages branch.
+concurrency:
+  group: release-charts
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -23,13 +29,29 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
           version: v3.16.2
+
+      - name: Auto-bump chart versions
+        id: bump
+        run: |
+          before="${{ github.event.before }}"
+          after="${{ github.sha }}"
+          bumped="$(bash scripts/bump-chart-versions.sh "$before" "$after")"
+          if [[ -n "$bumped" ]]; then
+            echo "Auto-bumped charts:"
+            echo "$bumped"
+            git add charts/*/Chart.yaml
+            git commit -m "chore(release): auto-bump chart versions [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "No chart versions needed auto-bumping."
+          fi
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0

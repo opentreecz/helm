@@ -1,0 +1,49 @@
+name: Scheduled Build
+
+# Regularly verify that every chart still lints, templates, and packages with
+# the latest Helm, independent of PR activity. Catches drift caused by Helm
+# releases or upstream API changes.
+on:
+  schedule:
+    # 06:00 UTC every Monday
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  build-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+
+      - name: Lint, template and package all charts
+        run: |
+          set -euo pipefail
+          mkdir -p .cr-release-packages
+          failed=0
+          for chart in charts/*/; do
+            [[ -f "${chart}Chart.yaml" ]] || continue
+            echo "::group::${chart}"
+            helm dependency update "$chart" || true
+            if ! helm lint "$chart"; then failed=1; fi
+            if ! helm template release "$chart" >/dev/null; then failed=1; fi
+            if ! helm package "$chart" --destination .cr-release-packages >/dev/null; then failed=1; fi
+            echo "::endgroup::"
+          done
+          if [[ "$failed" -ne 0 ]]; then
+            echo "One or more charts failed to build." >&2
+            exit 1
+          fi
+
+      - name: Upload packaged charts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-charts
+          path: .cr-release-packages/*.tgz
+          if-no-files-found: warn
+          retention-days: 7
