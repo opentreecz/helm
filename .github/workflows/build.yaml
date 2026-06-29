@@ -19,7 +19,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v5
         with:
-          version: v3.16.2
+          version: v3.21.2
 
       - name: Lint, template and package all charts
         run: |
