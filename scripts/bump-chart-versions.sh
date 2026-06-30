@@ -75,7 +75,9 @@ for chart_yaml in "${CHARTS_DIR}"/*/Chart.yaml; do
   echo "Bumped ${chart_name}: ${current} -> ${new_version}" >&2
 done
 
-# Emit bumped chart names to stdout for the caller.
-for name in "${bumped[@]:-}"; do
-  [[ -n "$name" ]] && echo "$name"
-done
+# Emit bumped chart names to stdout for the caller (one per line, none if empty).
+if [[ ${#bumped[@]} -gt 0 ]]; then
+  printf '%s\n' "${bumped[@]}"
+fi
+
+exit 0
