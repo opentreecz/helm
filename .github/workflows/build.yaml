@@ -9,6 +9,10 @@ on:
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
+# The scheduled build only reads the repository and uploads an artifact.
+permissions:
+  contents: read
+
 jobs:
   build-all:
     runs-on: ubuntu-latest

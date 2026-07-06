@@ -7,6 +7,10 @@ on:
       - 'ct.yaml'
       - '.github/workflows/lint-test.yaml'
 
+# Linting and testing only need to read the repository.
+permissions:
+  contents: read
+
 jobs:
   lint-test:
     runs-on: ubuntu-latest
