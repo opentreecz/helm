@@ -65,8 +65,10 @@ replicaCount: 1
 # ---------------------------------------------------------------------------
 podSecurityContext:
   runAsNonRoot: true
-  # debian-tor uid/gid in the official Debian tor package.
-  runAsUser: 101
+  # debian-tor in the official Debian tor package is uid=100, gid=101.
+  # Using uid 101 (the gid) causes "Permission denied" writing /etc/tor/torrc
+  # because /etc/tor is owned by uid 100 (mode 755).
+  runAsUser: 100
   runAsGroup: 101
   fsGroup: 101
   seccompProfile:

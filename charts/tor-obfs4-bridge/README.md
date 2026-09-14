@@ -41,13 +41,21 @@ All security hardening is enabled out of the box:
 
 | Setting | Value | Why |
 | ------- | ----- | --- |
-| `runAsNonRoot` | `true` | Container runs as `debian-tor` (uid 101), never root |
-| `runAsUser` / `runAsGroup` / `fsGroup` | `101` | debian-tor uid/gid from the Debian `tor` package |
+| `runAsNonRoot` | `true` | Container never runs as root |
+| `runAsUser` | `100` | debian-tor uid (uid=100 in the Debian `tor` package) |
+| `runAsGroup` | `101` | debian-tor gid (gid=101 in the Debian `tor` package) |
+| `fsGroup` | `101` | PVC volume ownership group — grants the debian-tor group access |
 | `capabilities.drop` | `["ALL"]` | Drop all Linux capabilities |
 | `capabilities.add` | `["NET_BIND_SERVICE"]` | obfs4proxy needs to bind ports < 1024 |
 | `allowPrivilegeEscalation` | `false` | Prevents privilege escalation via setuid |
 | `seccompProfile` | `RuntimeDefault` | Restricts syscalls to the container runtime default |
 | `readOnlyRootFilesystem` | `false` | Tor writes state files at runtime; not safe to lock |
+
+> **Important:** `runAsUser` must be **100** (not 101). In the Debian `tor`
+> package, `debian-tor` is uid=100, gid=101. `/etc/tor` is owned by uid 100
+> (mode 755). Running as uid 101 causes
+> `start-tor.sh: /etc/tor/torrc: Permission denied` and the pod crashes.
+> The chart enforces the correct value; do not override it.
 
 ## Prerequisites
 
@@ -165,7 +173,7 @@ Share this line with censored users or submit it to
 | `service.annotations` | object | `{}` | Extra annotations on the Service (e.g. cloud LB annotations) |
 | `replicaCount` | int | `1` | Must remain `1` — multiple replicas sharing one data dir are unsupported |
 | `podSecurityContext.runAsNonRoot` | bool | `true` | Enforce non-root |
-| `podSecurityContext.runAsUser` | int | `101` | debian-tor uid |
+| `podSecurityContext.runAsUser` | int | `100` | debian-tor uid (uid=100 in Debian tor package — do NOT set to 101) |
 | `podSecurityContext.runAsGroup` | int | `101` | debian-tor gid |
 | `podSecurityContext.fsGroup` | int | `101` | Volume ownership group |
 | `podSecurityContext.seccompProfile.type` | string | `RuntimeDefault` | Seccomp profile |
@@ -197,6 +205,15 @@ Share this line with censored users or submit it to
 - Use `service.type=NodePort` or `service.type=ClusterIP` if your cluster does
   not support LoadBalancer.
 
+**Pod crashes with `Permission denied` writing `/etc/tor/torrc`**
+- Root cause: the pod is running as the wrong UID. In the Debian `tor` package,
+  `debian-tor` is **uid=100, gid=101**. `/etc/tor` is owned by uid 100 (mode 755).
+  Running as uid 101 (the gid, not the uid) cannot write torrc.
+- This chart uses `runAsUser: 100` (correct). If you see this error, check that
+  you have not overridden `podSecurityContext.runAsUser` to 101.
+- Verify the image identity: `docker run --rm --entrypoint sh <image> -c 'id debian-tor'`
+  should print `uid=100(debian-tor) gid=101(debian-tor)`.
+
 **Pod starts but bridge line cannot be retrieved**
 - The bridge has not finished bootstrapping yet. Run
   `kubectl logs -n tor statefulset/my-bridge-tor-obfs4-bridge -f` and wait
@@ -208,9 +225,9 @@ Share this line with censored users or submit it to
 - If the PVC was deleted, the bridge has a new identity and all users need the
   new bridge line.
 
-**`config.email` is empty — container exits immediately**
-- Set `config.email` to your operator e-mail:
-  `--set config.email=you@example.org`
+**`config.email` is empty — helm install/upgrade fails**
+- `config.email` is required. The chart hard-fails at render time when it is empty.
+- Set it with: `--set config.email=you@example.org`
 
 ## Testing the chart
 
