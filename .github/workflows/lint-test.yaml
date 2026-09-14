@@ -26,7 +26,7 @@ jobs:
           version: v3.21.2
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           # chart-testing bundles a yamale version that relies on ast.Num,
           # which was removed in Python 3.12. Pin to 3.11 so `ct lint` works.
@@ -49,7 +49,7 @@ jobs:
 
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
-        uses: helm/kind-action@v1.14.0
+        uses: helm/kind-action@v1.15.0
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
