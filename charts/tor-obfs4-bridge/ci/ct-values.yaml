@@ -1,0 +1,16 @@
+# Values used by chart-testing (ct) when installing the chart in CI.
+# Overrides that make the chart installable in a kind cluster:
+#   - ClusterIP instead of LoadBalancer (kind doesn't have a cloud LB)
+#   - Persistence disabled (avoids needing a storage provisioner)
+#   - Non-empty email (required by start-tor.sh)
+
+config:
+  email: ci-test@example.org
+  orPort: 2123
+  ptPort: 2133
+
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: false

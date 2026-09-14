@@ -1,0 +1,26 @@
+Your Tor obfs4 bridge has been deployed!
+
+It may take up to 2 minutes for Tor to bootstrap and register with the
+directory authorities.  Watch progress with:
+
+  kubectl logs -n {{ .Release.Namespace }} \
+    statefulset/{{ include "tor-obfs4-bridge.fullname" . }} -f
+
+Once you see "Bootstrapped 100%", retrieve your bridge line with:
+
+  kubectl exec -n {{ .Release.Namespace }} \
+    {{ include "tor-obfs4-bridge.fullname" . }}-0 -- get-bridge-line
+
+The output will look like:
+
+  obfs4 <IP>:<PT_PORT> <FINGERPRINT> cert=<...> iat-mode=0
+
+Share this line with censored users or submit it to:
+  https://bridges.torproject.org/submit
+
+IMPORTANT: Make sure TCP ports {{ .Values.config.orPort }} (OR) and
+{{ .Values.config.ptPort }} (PT) are reachable from the internet.
+
+The bridge identity keys are persisted in /var/lib/tor.  Do NOT delete the
+PVC without backing up the data directory first – losing the keys means the
+bridge gets a new fingerprint and all users need a new bridge line.

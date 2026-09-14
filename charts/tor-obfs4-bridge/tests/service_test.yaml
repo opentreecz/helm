@@ -1,0 +1,71 @@
+suite: tor-obfs4-bridge service
+templates:
+  - service.yaml
+release:
+  name: my-bridge
+  namespace: test-ns
+tests:
+  - it: renders a Service with the expected fullname
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: my-bridge-tor-obfs4-bridge
+
+  - it: is a LoadBalancer by default
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+
+  - it: sets externalTrafficPolicy to Local for LoadBalancer
+    asserts:
+      - equal:
+          path: spec.externalTrafficPolicy
+          value: Local
+
+  - it: exposes orport and ptport
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: orport
+            port: 2123
+            targetPort: orport
+            protocol: TCP
+      - contains:
+          path: spec.ports
+          content:
+            name: ptport
+            port: 2133
+            targetPort: ptport
+            protocol: TCP
+
+  - it: honours service.type ClusterIP override
+    set:
+      service.type: ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: uses custom ports from config
+    set:
+      config.orPort: 9001
+      config.ptPort: 9002
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: orport
+            port: 9001
+            targetPort: orport
+            protocol: TCP
+      - contains:
+          path: spec.ports
+          content:
+            name: ptport
+            port: 9002
+            targetPort: ptport
+            protocol: TCP

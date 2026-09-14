@@ -1,8 +1,8 @@
 name: Scheduled Build
 
-# Regularly verify that every chart still lints, templates, and packages with
-# the latest Helm, independent of PR activity. Catches drift caused by Helm
-# releases or upstream API changes.
+# Regularly verify that every chart still lints, templates, packages, and
+# passes unit tests with the latest Helm, independent of PR activity.
+# Catches drift caused by Helm releases or upstream API changes.
 on:
   schedule:
     # 06:00 UTC every Monday
@@ -51,3 +51,41 @@ jobs:
           path: .cr-release-packages/*.tgz
           if-no-files-found: warn
           retention-days: 7
+
+  unit-test-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Helm
+        # helm-unittest v1.1.x uses the `platformHooks` plugin field, which
+        # requires Helm >= 3.18; keep this pin at 3.18+ to load the plugin.
+        uses: azure/setup-helm@v5
+        with:
+          version: v3.21.2
+
+      - name: Install helm-unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.1.1
+
+      - name: Run helm unit tests for all charts
+        run: |
+          set -euo pipefail
+          ran=0
+          failed=0
+          for chart in charts/*/; do
+            [[ -f "${chart}Chart.yaml" ]] || continue
+            if [ -d "${chart}tests" ]; then
+              echo "::group::unittest ${chart}"
+              if ! helm unittest "$chart"; then failed=1; fi
+              echo "::endgroup::"
+              ran=1
+            fi
+          done
+          if [ "$ran" -eq 0 ]; then
+            echo "No chart unit tests found."
+          fi
+          if [[ "$failed" -ne 0 ]]; then
+            echo "One or more chart unit test suites failed." >&2
+            exit 1
+          fi
