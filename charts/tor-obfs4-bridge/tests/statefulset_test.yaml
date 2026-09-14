@@ -181,3 +181,52 @@ tests:
             name: datadir
             persistentVolumeClaim:
               claimName: my-existing-pvc
+
+  # ---------------------------------------------------------------------------
+  # initContainer – volume ownership fix
+  #
+  # Kubernetes mounts PVCs and emptyDirs owned by root (uid 0).
+  # Tor refuses to start if DataDirectory (/var/lib/tor) is owned by root.
+  # The fix-volume-ownership initContainer chowns both volume mounts to
+  # 100:101 before the main container starts.
+  #
+  # Regression guard: removing or misconfiguring this initContainer would
+  # cause the same "not owned by this user" error that was reported in prod.
+  # ---------------------------------------------------------------------------
+
+  - it: has a fix-volume-ownership initContainer
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: fix-volume-ownership
+
+  - it: initContainer runs as root (uid 0) to perform chown
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.runAsUser
+          value: 0
+
+  - it: initContainer mounts datadir and logdir volumes
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: datadir
+            mountPath: /var/lib/tor
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: logdir
+            mountPath: /var/log/tor
+
+  - it: initContainer uses the busybox image from initImage values
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].image
+          pattern: "busybox"
+
+  - it: initContainer command chowns to 100:101
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: "chown -R 100:101"

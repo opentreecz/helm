@@ -13,6 +13,19 @@ image:
 imagePullSecrets: []
 
 # ---------------------------------------------------------------------------
+# Init container
+# Fixes volume ownership before Tor starts.
+# Kubernetes mounts PVCs and emptyDirs as root (uid 0); Tor refuses to use
+# DataDirectory /var/lib/tor unless owned by the running user (uid 100).
+# fsGroup sets the group but not the owner uid – this initContainer fills
+# the gap by running chown 100:101 as root before the main container starts.
+# ---------------------------------------------------------------------------
+initImage:
+  repository: busybox
+  tag: "1.36"
+  pullPolicy: IfNotPresent
+
+# ---------------------------------------------------------------------------
 # Bridge configuration
 # All six variables are required by start-tor.sh.
 # ---------------------------------------------------------------------------
