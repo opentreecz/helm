@@ -53,6 +53,16 @@ jobs:
             echo "No chart versions needed auto-bumping."
           fi
 
+      - name: Fetch chart dependencies
+        # Fetch OCI subchart dependencies (e.g. wordpress uses cloudpirates OCI charts).
+        # Must run before chart-releaser packages the charts.
+        run: |
+          set -euo pipefail
+          for chart in charts/*/; do
+            [[ -f "${chart}Chart.yaml" ]] || continue
+            helm dependency update "$chart" || true
+          done
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:

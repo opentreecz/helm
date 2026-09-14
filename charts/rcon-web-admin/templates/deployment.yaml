@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rcon-web-admin.fullname" . }}
+  labels:
+    {{- include "rcon-web-admin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "rcon-web-admin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "rcon-web-admin.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rcon-web-admin.fullname" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+         {{- if .Values.persistence.enabled }}
+         - name: db
+           persistentVolumeClaim:
+             claimName: {{ include "rcon-web-admin.fullname" . }}-db
+         {{- else }}
+         - name: db
+           emptyDir: {}
+         {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: RWA_USERNAME
+              value: {{ .Values.rconWeb.username | default "admin" | quote }}
+            - name: RWA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rconWeb.passwordExistingSecret | default (include "rcon-web-admin.fullname" .) }}
+                  key: {{ .Values.rconWeb.passwordKey | default "password" }}
+            - name: RWA_ADMIN
+              value: {{ .Values.rconWeb.isAdmin | default false | ternary "TRUE" "FALSE" | quote }}
+            - name: RWA_RCON_HOST
+              value: {{ .Values.rconWeb.rconHost | default "127.0.0.1" | quote }}
+            - name: RWA_RCON_PORT
+              value: {{ .Values.rconWeb.rconPort | default "25575" | quote }}
+            - name: RWA_GAME
+              value: {{ .Values.rconWeb.game | default "minecraft" | quote }}
+            - name: RWA_SERVER_NAME
+              value: {{ .Values.rconWeb.serverName | default .Values.rconWeb.game | quote }}
+            - name: RWA_RCON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rconWeb.rconPasswordExistingSecret | default (include "rcon-web-admin.fullname" .) }}
+                  key: {{ .Values.rconWeb.rconPasswordKey | default "rcon-password" }}
+            - name: RWA_RESTRICT_COMMANDS
+              value: {{ join "," .Values.rconWeb.restrictCommands | quote }}
+            - name: RWA_RESTRICT_WIDGETS
+              value: {{ join "," .Values.rconWeb.restrictWidgets | quote }}
+            - name: RWA_READ_ONLY_WIDGET_OPTIONS
+              value: {{ .Values.rconWeb.immutableWidgetOptions | default false | ternary "TRUE" "FALSE" | quote }}
+            - name: RWA_WEB_RCON
+              value: {{ .Values.rconWeb.websocketRcon | default false | ternary "TRUE" "FALSE" | quote }}
+            - name: RWA_WEBSOCKET_URL_SSL
+              value: {{ .Values.rconWeb.websocketUrlSsl | default "wss://localhost:4327" | quote }}
+            - name: RWA_WEBSOCKET_URL
+              value: {{ .Values.rconWeb.websocketUrl | default "ws://localhost:4327" | quote }}
+          ports:
+            - name: http
+              containerPort: 4326
+              protocol: TCP
+            - name: ws
+              containerPort: 4327
+              protocol: TCP
+          volumeMounts:
+            - name: db
+              mountPath: /opt/rcon-web-admin/db
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path | default "/" }}
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds | default 0 }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 1 }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path | default "/" }}
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 0 }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 1 }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

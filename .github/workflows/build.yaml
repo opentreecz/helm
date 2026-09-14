@@ -34,8 +34,13 @@ jobs:
             [[ -f "${chart}Chart.yaml" ]] || continue
             echo "::group::${chart}"
             helm dependency update "$chart" || true
-            if ! helm lint "$chart"; then failed=1; fi
-            if ! helm template release "$chart" >/dev/null; then failed=1; fi
+            # Use ci/ct-values.yaml if present to supply required values during lint.
+            lint_args=()
+            if [[ -f "${chart}ci/ct-values.yaml" ]]; then
+              lint_args+=(-f "${chart}ci/ct-values.yaml")
+            fi
+            if ! helm lint "$chart" "${lint_args[@]}"; then failed=1; fi
+            if ! helm template release "$chart" "${lint_args[@]}" >/dev/null; then failed=1; fi
             if ! helm package "$chart" --destination .cr-release-packages >/dev/null; then failed=1; fi
             echo "::endgroup::"
           done

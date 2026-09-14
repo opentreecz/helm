@@ -1,0 +1,44 @@
+apiVersion: v2
+name: minecraft-proxy
+type: application
+version: 3.10.0
+appVersion: "2024.6.0"
+description: >-
+  Minecraft proxy server supporting BungeeCord, Waterfall, Velocity, and other
+  proxy types. Uses the official itzg/bungeecord image.
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/itzg/docker-bungeecord
+  - https://github.com/itzg/minecraft-server-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: itzg
+    email: itzgeoff@gmail.com
+  - name: chipwolf
+    email: hello@chipwolf.uk
+  - name: gtaylor
+    email: gtaylor@gc-taylor.com
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/minecraft-proxy
+    - name: Original chart (itzg/minecraft-server-charts)
+      url: https://github.com/itzg/minecraft-server-charts
+    - name: itzg/bungeecord source
+      url: https://github.com/itzg/docker-bungeecord
+    - name: itzg/bungeecord Docker Hub
+      url: https://hub.docker.com/r/itzg/bungeecord
+  artifacthub.io/images: |
+    - name: bungeecord
+      image: docker.io/itzg/bungeecord:latest
+keywords:
+  - minecraft
+  - proxy
+  - bungeecord
+  - velocity
+  - waterfall
+  - game
+  - server

@@ -17,6 +17,7 @@ automatically packaged and published to GitHub Pages on merge to `main` using
 
 - [Usage](#usage)
 - [Available Charts](#available-charts)
+- [Attribution](#attribution)
 - [Repository Layout](#repository-layout)
 - [Automation](#automation)
 - [Versioning](#versioning-auto-bump)
@@ -64,8 +65,32 @@ helm install my-bridge opentree/tor-obfs4-bridge \
 
 | Chart | Version | Description |
 | ----- | ------- | ----------- |
-| [example-app](./charts/example-app) | 0.1.1 | A starter chart for deploying a generic web application |
-| [tor-obfs4-bridge](./charts/tor-obfs4-bridge) | 0.1.1 | Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer) |
+| [example-app](./charts/example-app) | 0.1.2 | Starter chart for a generic web application |
+| [tor-obfs4-bridge](./charts/tor-obfs4-bridge) | 0.1.2 | Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer) |
+| [wg-easy](./charts/wg-easy) | 0.6.3 | WireGuard VPN server with web UI (wg-easy) |
+| [wireguard](./charts/wireguard) | 0.4.3 | WireGuard VPN via linuxserver/wireguard (server + client mode) |
+| [wordpress](./charts/wordpress) | 3.6.10 | WordPress CMS with MariaDB/Redis/Valkey/Memcached subcharts |
+| [mc-router](./charts/mc-router) | 1.5.0 | Minecraft Java Edition connection router (itzg/mc-router) |
+| [minecraft](./charts/minecraft) | 5.2.0 | Minecraft Java Edition server (itzg/minecraft-server) |
+| [minecraft-bedrock](./charts/minecraft-bedrock) | 2.9.0 | Minecraft Bedrock Edition server (itzg/minecraft-bedrock-server) |
+| [minecraft-proxy](./charts/minecraft-proxy) | 3.10.0 | Minecraft proxy (BungeeCord/Velocity/Waterfall via itzg/bungeecord) |
+| [rcon-web-admin](./charts/rcon-web-admin) | 1.2.1 | Web RCON admin panel for game servers (itzg/rcon-web-admin) |
+
+---
+
+## Attribution
+
+Charts in this repository are sourced from the following upstream projects and
+maintained under the terms of their respective licenses (all MIT or Apache-2.0):
+
+| Chart(s) | Original repository | Original author |
+| -------- | ------------------- | --------------- |
+| `wg-easy`, `wireguard`, `wordpress` | [slydlake/helm-charts](https://github.com/slydlake/helm-charts) | [slydlake](https://github.com/slydlake) |
+| `mc-router`, `minecraft`, `minecraft-bedrock`, `minecraft-proxy`, `rcon-web-admin` | [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts) | [itzg](https://github.com/itzg) and contributors |
+
+Charts have been rebased to conform to this repository's conventions (apiVersion v2,
+standardized maintainers, `ci/ct-values.yaml`, helm-unittest suites). The original
+`sources:` URLs are preserved in each chart's `Chart.yaml`.
 
 ---
 
@@ -74,20 +99,25 @@ helm install my-bridge opentree/tor-obfs4-bridge \
 ```
 .
 ├── charts/                          # One directory per chart
-│   ├── example-app/                 # Example/starter chart
-│   │   ├── ci/                      # chart-testing override values
-│   │   ├── templates/               # Kubernetes manifest templates
-│   │   ├── tests/                   # helm-unittest test suites (*_test.yaml)
-│   │   ├── Chart.yaml
-│   │   ├── values.yaml
-│   │   └── README.md
-│   └── tor-obfs4-bridge/            # Tor obfs4 bridge chart
-│       ├── ci/                      # chart-testing override values
-│       ├── templates/               # Kubernetes manifest templates
-│       ├── tests/                   # helm-unittest test suites (*_test.yaml)
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── README.md
+│   ├── example-app/                 # Starter/reference chart
+│   ├── tor-obfs4-bridge/            # Tor obfs4 bridge
+│   ├── wg-easy/                     # WireGuard + web UI (wg-easy)
+│   ├── wireguard/                   # WireGuard (linuxserver)
+│   ├── wordpress/                   # WordPress CMS
+│   ├── mc-router/                   # Minecraft Java router
+│   ├── minecraft/                   # Minecraft Java server
+│   ├── minecraft-bedrock/           # Minecraft Bedrock server
+│   ├── minecraft-proxy/             # Minecraft proxy (BungeeCord/Velocity)
+│   └── rcon-web-admin/              # RCON web admin panel
+│
+│   Each chart contains:
+│   ├── ci/ct-values.yaml            # Override values for chart-testing in kind
+│   ├── templates/                   # Kubernetes manifest templates
+│   ├── tests/*_test.yaml            # helm-unittest suites
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── README.md
+│
 ├── scripts/
 │   └── bump-chart-versions.sh       # Auto-bump helper used by the release workflow
 ├── ct.yaml                          # chart-testing configuration

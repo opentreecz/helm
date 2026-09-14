@@ -1,0 +1,21 @@
+# Test websocket env vars with ingress enabled
+# The chart should set RWA_WEBSOCKET_URL and RWA_WEBSOCKET_URL_SSL env vars
+service:
+  type: ClusterIP
+
+rconWeb:
+  password: test
+  rconHost: ""
+  rconPort: 0
+
+ingress:
+  enabled: true
+  host: example.com
+  path: /
+
+# Disable readiness probe - no Minecraft server in CI
+readinessProbe:
+  enabled: false
+
+livenessProbe:
+  enabled: false

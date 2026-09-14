@@ -1,0 +1,20 @@
+# Test websocket env vars without ingress (simulating LoadBalancer scenario)
+# The chart should set RWA_WEBSOCKET_URL and RWA_WEBSOCKET_URL_SSL env vars
+# regardless of whether ingress is enabled or disabled
+service:
+  type: ClusterIP
+
+rconWeb:
+  password: test
+  rconHost: ""
+  rconPort: 0
+
+ingress:
+  enabled: false
+
+# Disable probes - no Minecraft server in CI
+readinessProbe:
+  enabled: false
+
+livenessProbe:
+  enabled: false

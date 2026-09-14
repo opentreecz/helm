@@ -1,0 +1,27 @@
+suite: minecraft-proxy service
+templates:
+  - proxy-svc.yaml
+release:
+  name: my-proxy
+  namespace: test-ns
+tests:
+  - it: renders a Service
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: defaults to ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: exposes port 25565 (proxy default) with targetPort
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: proxy
+            port: 25565
+            protocol: TCP
+            targetPort: proxy

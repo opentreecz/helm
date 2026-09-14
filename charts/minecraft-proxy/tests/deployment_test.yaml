@@ -1,0 +1,23 @@
+suite: minecraft-proxy deployment
+templates:
+  - deployment.yaml
+release:
+  name: my-proxy
+  namespace: test-ns
+tests:
+  - it: renders a Deployment
+    asserts:
+      - isKind:
+          of: Deployment
+
+  - it: has correct resource name
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-proxy-minecraft-proxy
+
+  - it: uses the itzg/bungeecord image
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "itzg/bungeecord"

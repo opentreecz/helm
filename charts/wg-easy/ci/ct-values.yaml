@@ -1,0 +1,15 @@
+# Values for chart-testing (ct) in a kind cluster.
+# wg-easy requires NET_ADMIN and host networking which are not available in kind.
+# We use a minimal configuration to verify chart installs without errors.
+
+# Use ClusterIP to avoid requiring a cloud LoadBalancer.
+service:
+  ui:
+    type: ClusterIP
+  wireguard:
+    type: ClusterIP
+
+# Use standard StorageClass available in kind.
+storage:
+  storageClass: "standard"
+  size: "100Mi"

@@ -1,0 +1,8 @@
+wireguard:
+  timezone: "Europe/Berlin"
+  client:
+    enabled: true
+    config:
+      existingSecret: "client-secret"
+      persistentKeepalive: 25
+      endpoint: "vpn.example.com:51820"

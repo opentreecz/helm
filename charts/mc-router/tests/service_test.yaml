@@ -1,0 +1,25 @@
+suite: mc-router service
+templates:
+  - router-service.yaml
+release:
+  name: my-mc-router
+  namespace: test-ns
+tests:
+  - it: renders a Service
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: defaults to NodePort service type
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort
+
+  - it: honours ClusterIP override
+    set:
+      services.minecraft.type: ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP

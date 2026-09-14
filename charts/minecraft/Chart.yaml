@@ -1,0 +1,41 @@
+apiVersion: v2
+name: minecraft
+type: application
+version: 5.2.0
+appVersion: "2024.6.0"
+description: >-
+  Minecraft Java Edition server using the official itzg/minecraft-server image.
+  Supports hundreds of server types (Vanilla, Paper, Forge, Fabric, etc.),
+  mods, plugins, backup via rclone, and RCON.
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/itzg/docker-minecraft-server
+  - https://github.com/itzg/minecraft-server-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: itzg
+    email: itzgeoff@gmail.com
+  - name: gtaylor
+    email: gtaylor@gc-taylor.com
+  - name: bibz87
+    email: yannik@carbongem.com
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/minecraft
+    - name: Original chart (itzg/minecraft-server-charts)
+      url: https://github.com/itzg/minecraft-server-charts
+    - name: itzg/minecraft-server source
+      url: https://github.com/itzg/docker-minecraft-server
+    - name: itzg/minecraft-server Docker Hub
+      url: https://hub.docker.com/r/itzg/minecraft-server
+  artifacthub.io/images: |
+    - name: minecraft-server
+      image: docker.io/itzg/minecraft-server:latest
+keywords:
+  - minecraft
+  - game
+  - server

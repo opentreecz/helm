@@ -1,0 +1,30 @@
+suite: minecraft-bedrock service
+templates:
+  - minecraft-svc.yaml
+release:
+  name: my-mcbe
+  namespace: test-ns
+set:
+  minecraftServer:
+    eula: "TRUE"
+tests:
+  - it: renders a Service
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: defaults to ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: exposes port 19132 (Bedrock UDP)
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: minecraft
+            port: 19132
+            protocol: UDP
+            targetPort: minecraft

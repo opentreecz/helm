@@ -1,0 +1,39 @@
+apiVersion: v2
+name: minecraft-bedrock
+type: application
+version: 2.9.0
+appVersion: "1.21.80.3"
+description: >-
+  Minecraft Bedrock Edition server using the official itzg/minecraft-bedrock-server
+  image. Supports automatic updates and cross-platform play.
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/itzg/docker-minecraft-bedrock-server
+  - https://github.com/itzg/minecraft-server-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: itzg
+    email: itzgeoff@gmail.com
+  - name: gtaylor
+    email: gtaylor@gc-taylor.com
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/minecraft-bedrock
+    - name: Original chart (itzg/minecraft-server-charts)
+      url: https://github.com/itzg/minecraft-server-charts
+    - name: itzg/minecraft-bedrock-server source
+      url: https://github.com/itzg/docker-minecraft-bedrock-server
+    - name: itzg/minecraft-bedrock-server Docker Hub
+      url: https://hub.docker.com/r/itzg/minecraft-bedrock-server
+  artifacthub.io/images: |
+    - name: minecraft-bedrock-server
+      image: docker.io/itzg/minecraft-bedrock-server:latest
+keywords:
+  - minecraft
+  - bedrock
+  - game
+  - server

@@ -1,0 +1,37 @@
+apiVersion: v2
+name: wg-easy
+description: >-
+  Helm chart for wg-easy – a WireGuard VPN server with a web UI.
+  Uses the official ghcr.io/wg-easy/wg-easy image and supports almost
+  any environment variable as well as Init Mode.
+type: application
+version: 0.6.3
+appVersion: "15.2.2"
+icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wg-easy/app.png
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/wg-easy/wg-easy
+  - https://github.com/slydlake/helm-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: slydlake
+    email: sly.dlake@gmail.com
+annotations:
+  artifacthub.io/category: security
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/wg-easy
+    - name: Original chart (slydlake/helm-charts)
+      url: https://github.com/slydlake/helm-charts/tree/main/charts/wg-easy
+    - name: Official wg-easy documentation
+      url: https://wg-easy.github.io/wg-easy/latest/
+  artifacthub.io/images: |
+    - name: wg-easy
+      image: ghcr.io/wg-easy/wg-easy:15.2.2
+keywords:
+  - wireguard
+  - vpn
+  - wg-easy

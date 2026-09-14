@@ -1,0 +1,33 @@
+suite: minecraft-bedrock deployment
+templates:
+  - deployment.yaml
+release:
+  name: my-mcbe
+  namespace: test-ns
+set:
+  minecraftServer:
+    eula: "TRUE"
+tests:
+  - it: renders a Deployment by default
+    asserts:
+      - isKind:
+          of: Deployment
+
+  - it: has correct resource name
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-mcbe-minecraft-bedrock
+
+  - it: uses the itzg/minecraft-bedrock-server image
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "itzg/minecraft-bedrock-server"
+
+  - it: renders as StatefulSet when workloadAsStatefulSet is true
+    set:
+      workloadAsStatefulSet: true
+    asserts:
+      - isKind:
+          of: StatefulSet
