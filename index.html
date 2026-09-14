@@ -1,8 +1,117 @@
 <!doctype html>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>opentree Helm Charts</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #24292f; }
+  h1 { border-bottom: 1px solid #d0d7de; padding-bottom: 12px; }
+  h2 { margin-top: 32px; }
+  code, pre { background: #f6f8fa; border-radius: 6px; padding: 2px 6px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.9em; }
+  pre { padding: 12px 16px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #d0d7de; padding: 8px 12px; text-align: left; }
+  th { background: #f6f8fa; }
+  a { color: #0969da; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .badge { display: inline-block; background: #0969da; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 0.8em; }
+</style>
+
 <h1>opentree Helm Charts</h1>
-<p>Helm chart repository. Add it with:</p>
+
+<p>
+  A Kubernetes <a href="https://helm.sh">Helm</a> chart repository maintained by
+  <a href="https://github.com/opentreecz">opentreecz</a>.
+  Charts are linted, unit-tested, and published automatically via
+  <a href="https://github.com/helm/chart-releaser-action">chart-releaser</a>.
+</p>
+
+<h2>Usage</h2>
+
 <pre>helm repo add opentree https://opentreecz.github.io/helm
-helm repo update</pre>
-<p>See the <a href="https://github.com/opentreecz/helm">source repository</a>.</p>
+helm repo update
+helm search repo opentree</pre>
+
+<h2>Available Charts</h2>
+
+<table>
+  <thead>
+    <tr><th>Chart</th><th>Description</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>example-app</strong></td>
+      <td>Starter chart for a generic web application</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/example-app">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>tor-obfs4-bridge</strong></td>
+      <td>Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/tor-obfs4-bridge">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>wg-easy</strong></td>
+      <td>WireGuard VPN server with web UI (wg-easy)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/wg-easy">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>wireguard</strong></td>
+      <td>WireGuard VPN – server and client mode (linuxserver/wireguard)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/wireguard">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>wordpress</strong></td>
+      <td>WordPress CMS with optional MariaDB / Redis / Valkey / Memcached subcharts</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/wordpress">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>mc-router</strong></td>
+      <td>Minecraft Java Edition connection router (itzg/mc-router)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/mc-router">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>minecraft</strong></td>
+      <td>Minecraft Java Edition server (itzg/minecraft-server, 200+ options)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/minecraft">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>minecraft-bedrock</strong></td>
+      <td>Minecraft Bedrock Edition server (itzg/minecraft-bedrock-server)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/minecraft-bedrock">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>minecraft-proxy</strong></td>
+      <td>Minecraft proxy – BungeeCord / Velocity / Waterfall (itzg/bungeecord)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/minecraft-proxy">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>rcon-web-admin</strong></td>
+      <td>Web RCON admin panel for game servers (itzg/rcon-web-admin)</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/rcon-web-admin">opentreecz/helm</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Install an example</h2>
+
+<pre># Tor obfs4 bridge
+helm install my-bridge opentree/tor-obfs4-bridge \
+  --set config.email=you@example.org \
+  --namespace tor --create-namespace
+
+# Minecraft Java server
+helm install my-mc opentree/minecraft \
+  --set minecraftServer.eula=TRUE \
+  --namespace minecraft --create-namespace
+
+# WordPress
+helm install my-wp opentree/wordpress \
+  --set wordpress.url=https://myblog.example.org \
+  --set mariadb.enabled=true \
+  --namespace wordpress --create-namespace</pre>
+
+<h2>Links</h2>
+<ul>
+  <li><a href="https://github.com/opentreecz/helm">Source repository</a></li>
+  <li><a href="https://github.com/opentreecz/helm/blob/main/README.md">Full documentation</a></li>
+  <li><a href="https://github.com/opentreecz/helm/blob/main/CONTRIBUTING.md">Contributing guide</a></li>
+</ul>
