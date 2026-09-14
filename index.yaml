@@ -3,6 +3,24 @@ entries:
   example-app:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-09-14T16:05:56.287051893Z"
+    description: A starter Helm chart for deploying a generic web application on Kubernetes
+    digest: b6f8430c8305c858763d61c07751ab088e57b72c97f11a695597a56437be7373
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - example
+    - web
+    maintainers:
+    - name: opentreecz
+    name: example-app
+    sources:
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/example-app-0.1.2/example-app-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-06-30T00:34:21.128267643Z"
     description: A starter Helm chart for deploying a generic web application on Kubernetes
     digest: df412fb8afa5ed97a4e0fa6fa01c296445bf1bf219934366ffad1ac9c32c40c5
@@ -20,6 +38,33 @@ entries:
     - https://github.com/opentreecz/helm/releases/download/example-app-0.1.1/example-app-0.1.1.tgz
     version: 0.1.1
   tor-obfs4-bridge:
+  - apiVersion: v2
+    appVersion: 0.4.9.12-1-d13.trixie-1
+    created: "2026-09-14T16:05:56.436904381Z"
+    description: Helm chart for running a Tor obfs4 pluggable-transport bridge on
+      Kubernetes. Deploys a StatefulSet with persistent storage, a LoadBalancer Service
+      exposing the OR port and PT port, and hardened security defaults (non-root,
+      capability drop, seccomp RuntimeDefault).
+    digest: 403297b9083217c6589d6170e30045e660835e47e54d41742a06470ed9e7487a
+    home: https://github.com/zetneteork/docker-tor-obfs4-bridge
+    keywords:
+    - tor
+    - bridge
+    - obfs4
+    - privacy
+    - anonymity
+    - pluggable-transport
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    name: tor-obfs4-bridge
+    sources:
+    - https://github.com/zetneteork/docker-tor-obfs4-bridge
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/tor-obfs4-bridge-0.1.2/tor-obfs4-bridge-0.1.2.tgz
+    version: 0.1.2
   - apiVersion: v2
     appVersion: 0.4.9.12-1-d13.trixie-1
     created: "2026-09-14T15:58:47.848970234Z"
@@ -47,4 +92,4 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/tor-obfs4-bridge-0.1.1/tor-obfs4-bridge-0.1.1.tgz
     version: 0.1.1
-generated: "2026-09-14T15:58:47.848974821Z"
+generated: "2026-09-14T16:05:56.436916008Z"
