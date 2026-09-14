@@ -9,6 +9,32 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed — tor-obfs4-bridge
+- **`runAsUser: 101` → `100`** in `values.yaml` — critical bug: `debian-tor`
+  in the Debian `tor` package is **uid=100, gid=101**. Running as uid 101
+  caused `start-tor.sh: /etc/tor/torrc: Permission denied` because `/etc/tor`
+  is owned by uid 100 (mode 755). Docker was unaffected (`USER debian-tor`
+  resolves the name to uid 100). Kubernetes uses the numeric uid directly.
+- **Hard-fail email guard** added to `templates/statefulset.yaml`: `helm install`
+  now fails immediately with a clear message when `config.email` is empty,
+  instead of the pod crashing after start.
+
+### Added — tor-obfs4-bridge tests
+- `tests/statefulset_test.yaml`: folded in full securityContext regression
+  suite — `runAsUser: 100`, `runAsGroup: 101`, `fsGroup: 101`,
+  `runAsNonRoot: true`, `seccompProfile: RuntimeDefault`,
+  `allowPrivilegeEscalation: false`, cap drop ALL / add NET_BIND_SERVICE.
+  These tests fail if `runAsUser` is ever reset to 101.
+- `tests/email-required_test.yaml` (new): `failedTemplate` asserts when
+  `config.email` is empty or unset; renders correctly when set.
+
+### Changed — tor-obfs4-bridge documentation
+- `README.md`: updated security-defaults table (`runAsUser 100`); added
+  uid=100/gid=101 explanation and warning; added `Permission denied`
+  troubleshooting entry; `config.email` hard-fail note updated.
+- `values.yaml`: comment updated to explain uid=100/gid=101 and the
+  consequence of using the wrong value.
+
 ### Added
 - **8 charts imported** from external repositories (rebased to repo conventions):
   - `wg-easy` (0.6.3) — WireGuard + web UI, from [slydlake/helm-charts](https://github.com/slydlake/helm-charts)

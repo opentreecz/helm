@@ -66,7 +66,7 @@ helm install my-bridge opentree/tor-obfs4-bridge \
 | Chart | Version | Description |
 | ----- | ------- | ----------- |
 | [example-app](./charts/example-app) | 0.1.2 | Starter chart for a generic web application |
-| [tor-obfs4-bridge](./charts/tor-obfs4-bridge) | 0.1.2 | Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer) |
+| [tor-obfs4-bridge](./charts/tor-obfs4-bridge) | 0.1.3 | Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer) |
 | [wg-easy](./charts/wg-easy) | 0.6.3 | WireGuard VPN server with web UI (wg-easy) |
 | [wireguard](./charts/wireguard) | 0.4.3 | WireGuard VPN via linuxserver/wireguard (server + client mode) |
 | [wordpress](./charts/wordpress) | 3.6.10 | WordPress CMS with MariaDB/Redis/Valkey/Memcached subcharts |

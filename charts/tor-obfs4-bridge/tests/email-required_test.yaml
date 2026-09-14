@@ -1,0 +1,38 @@
+suite: tor-obfs4-bridge email required
+templates:
+  - statefulset.yaml
+release:
+  name: my-bridge
+  namespace: test-ns
+tests:
+  # ---------------------------------------------------------------------------
+  # Hard-fail guard: config.email is required
+  #
+  # An empty config.email causes start-tor.sh to fail env validation at
+  # container startup. The chart hard-fails at render time so the error is
+  # reported immediately by helm install/upgrade, not after the pod starts.
+  # ---------------------------------------------------------------------------
+
+  - it: fails to render when config.email is empty
+    set:
+      config.email: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "config.email is required. Set it with: --set config.email=you@example.org"
+
+  - it: fails to render when config.email is not set at all
+    asserts:
+      - failedTemplate:
+          errorMessage: "config.email is required. Set it with: --set config.email=you@example.org"
+
+  - it: renders successfully when config.email is set
+    set:
+      config.email: operator@example.org
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EMAIL
+            value: operator@example.org

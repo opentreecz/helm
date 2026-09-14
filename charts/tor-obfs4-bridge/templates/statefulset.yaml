@@ -1,3 +1,6 @@
+{{- if not .Values.config.email -}}
+{{- fail "config.email is required. Set it with: --set config.email=you@example.org" -}}
+{{- end }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

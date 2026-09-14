@@ -4,6 +4,10 @@ templates:
 release:
   name: my-bridge
   namespace: test-ns
+# config.email is required by the hard-fail guard in statefulset.yaml.
+# All tests in this suite must supply it via set: or a global values file.
+set:
+  config.email: test@example.org
 tests:
   - it: renders a StatefulSet with the expected fullname
     asserts:
@@ -83,20 +87,61 @@ tests:
             containerPort: 2133
             protocol: TCP
 
-  - it: runs as non-root user 101
+  # ---------------------------------------------------------------------------
+  # Security context – regression guard for the Kubernetes UID/GID bug
+  #
+  # debian-tor in the official Debian tor package is uid=100 / gid=101.
+  # /etc/tor is owned by uid 100 (mode 755). Running as uid 101 (the gid,
+  # not the uid) causes: start-tor.sh: /etc/tor/torrc: Permission denied
+  #
+  # These tests will FAIL if someone accidentally reintroduces runAsUser: 101,
+  # preventing the regression from shipping silently.
+  # ---------------------------------------------------------------------------
+
+  - it: "security: runAsNonRoot is true (never runs as root)"
     asserts:
       - equal:
           path: spec.template.spec.securityContext.runAsNonRoot
           value: true
+
+  - it: "security: runAsUser is 100 (debian-tor uid, NOT 101)"
+    asserts:
       - equal:
           path: spec.template.spec.securityContext.runAsUser
+          value: 100
+
+  - it: "security: runAsGroup is 101 (debian-tor gid)"
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
           value: 101
 
-  - it: drops all capabilities and adds NET_BIND_SERVICE
+  - it: "security: fsGroup is 101 (debian-tor gid for PVC ownership)"
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 101
+
+  - it: "security: seccompProfile is RuntimeDefault"
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.seccompProfile.type
+          value: RuntimeDefault
+
+  - it: "security: allowPrivilegeEscalation is false"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+
+  - it: "security: drops all capabilities"
     asserts:
       - equal:
           path: spec.template.spec.containers[0].securityContext.capabilities.drop[0]
           value: ALL
+
+  - it: "security: adds only NET_BIND_SERVICE capability (for obfs4proxy)"
+    asserts:
       - equal:
           path: spec.template.spec.containers[0].securityContext.capabilities.add[0]
           value: NET_BIND_SERVICE
