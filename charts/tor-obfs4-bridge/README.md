@@ -1,19 +1,60 @@
-# tor-obfs4-bridge Helm chart
+# tor-obfs4-bridge
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/opentree)](https://artifacthub.io/packages/search?repo=opentree)
 
 Helm chart for running a [Tor](https://www.torproject.org/) bridge with the
 [obfs4](https://gitlab.com/yawning/obfs4) pluggable transport on Kubernetes.
 
-Bridges help censored users reach the Tor network by disguising traffic.
-This chart deploys a **StatefulSet** (for stable identity and persistent storage),
-a **LoadBalancer Service** (two TCP ports), and a **ServiceAccount**, with
-security hardening baked in by default.
+Bridges help censored users reach the Tor network by disguising Tor traffic as
+ordinary traffic. Running one is safe, legal in most jurisdictions, and only
+requires two open TCP ports.
+
+## Architecture
+
+```
+Internet
+  │
+  ├─► OR_PORT  (TCP, default 2123) ──► Tor OR listener
+  └─► PT_PORT  (TCP, default 2133) ──► obfs4proxy ──► Tor ExtOR port
+                                                          │
+                                             /var/lib/tor (persistent PVC)
+                                             /var/log/tor (emptyDir)
+```
+
+This chart deploys:
+
+| Resource | Kind | Purpose |
+| -------- | ---- | ------- |
+| `tor-obfs4-bridge` | StatefulSet | Runs the Tor + obfs4proxy process; single replica with stable identity |
+| `tor-obfs4-bridge` | Service | LoadBalancer exposing OR port + PT port |
+| `tor-obfs4-bridge` | ServiceAccount | Least-privilege identity for the pod |
+| `datadir` | volumeClaimTemplate | Persists `/var/lib/tor` (bridge keys, state) across pod restarts |
+
+**Why StatefulSet?** A Tor bridge must keep a stable identity (key pair). Losing
+`/var/lib/tor` means the bridge gets a new fingerprint and all users need a new
+bridge line. StatefulSet with `volumeClaimTemplate` gives the pod a stable PVC
+bound to the pod identity.
+
+## Security defaults
+
+All security hardening is enabled out of the box:
+
+| Setting | Value | Why |
+| ------- | ----- | --- |
+| `runAsNonRoot` | `true` | Container runs as `debian-tor` (uid 101), never root |
+| `runAsUser` / `runAsGroup` / `fsGroup` | `101` | debian-tor uid/gid from the Debian `tor` package |
+| `capabilities.drop` | `["ALL"]` | Drop all Linux capabilities |
+| `capabilities.add` | `["NET_BIND_SERVICE"]` | obfs4proxy needs to bind ports < 1024 |
+| `allowPrivilegeEscalation` | `false` | Prevents privilege escalation via setuid |
+| `seccompProfile` | `RuntimeDefault` | Restricts syscalls to the container runtime default |
+| `readOnlyRootFilesystem` | `false` | Tor writes state files at runtime; not safe to lock |
 
 ## Prerequisites
 
 - Kubernetes 1.24+
 - Helm 3.8+
-- A LoadBalancer-capable cluster (or use `service.type=NodePort`)
-- Two inbound TCP ports reachable from the internet (`orPort` and `ptPort`)
+- A LoadBalancer-capable cluster (or use `service.type=NodePort` with fixed `nodePort` values)
+- Two inbound TCP ports reachable from the internet (`config.orPort` and `config.ptPort`)
 
 ## Installing
 
@@ -27,43 +68,171 @@ helm install my-bridge opentree/tor-obfs4-bridge \
   --create-namespace
 ```
 
-## Getting the bridge line
+### Required value
 
-After the pod has bootstrapped (~2 minutes):
+`config.email` is the only value without a safe default — it is published in
+the Tor relay descriptor and is how the Tor Project contacts you about your
+bridge. The container will refuse to start if it is empty.
+
+### Common overrides
 
 ```bash
+# Custom ports
+helm install my-bridge opentree/tor-obfs4-bridge \
+  --set config.email=you@example.org \
+  --set config.orPort=9001 \
+  --set config.ptPort=9002 \
+  --namespace tor --create-namespace
+
+# Pin a specific Tor image version
+helm install my-bridge opentree/tor-obfs4-bridge \
+  --set config.email=you@example.org \
+  --set image.tag=0.4.9.12-1-d13.trixie-1 \
+  --namespace tor --create-namespace
+
+# Use a custom values file
+helm install my-bridge opentree/tor-obfs4-bridge \
+  -f my-bridge-values.yaml \
+  --namespace tor --create-namespace
+```
+
+## Upgrading
+
+```bash
+helm repo update
+helm upgrade my-bridge opentree/tor-obfs4-bridge --namespace tor
+```
+
+> **Important:** upgrading recreates the pod (the StatefulSet uses
+> `RollingUpdate`). The PVC is retained so bridge identity keys are preserved.
+
+## Uninstalling
+
+```bash
+helm uninstall my-bridge --namespace tor
+```
+
+> **Warning:** uninstalling does **not** delete the PVC. To also delete the
+> bridge identity data:
+>
+> ```bash
+> kubectl delete pvc -n tor datadir-my-bridge-tor-obfs4-bridge-0
+> ```
+
+## Getting the bridge line
+
+After the pod has bootstrapped (watch for `Bootstrapped 100%` in the logs,
+which typically takes 1–2 minutes):
+
+```bash
+# Watch bootstrap progress
+kubectl logs -n tor statefulset/my-bridge-tor-obfs4-bridge -f
+
+# Retrieve the bridge line
 kubectl exec -n tor my-bridge-tor-obfs4-bridge-0 -- get-bridge-line
 ```
 
-## Values
+Example output:
+
+```
+obfs4 203.0.113.42:9002 AABBCCDDEEFF00112233445566778899AABBCCDD cert=xxxx iat-mode=0
+```
+
+Share this line with censored users or submit it to
+[bridges.torproject.org](https://bridges.torproject.org/submit).
+
+## Values reference
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | ---- | ------- | ----------- |
 | `image.repository` | string | `ghcr.io/zetneteork/docker-tor-obfs4-bridge` | Container image repository |
-| `image.tag` | string | `""` (chart appVersion) | Image tag override |
-| `image.pullPolicy` | string | `Always` | Image pull policy |
-| `config.orPort` | int | `2123` | OR port (must be open inbound) |
-| `config.ptPort` | int | `2133` | obfs4 PT port (must be open inbound) |
-| `config.email` | string | `""` | Operator contact e-mail (**required**) |
-| `config.ipv4Only` | string | `"1"` | `"1"` = IPv4 only, `"0"` = dual-stack |
-| `config.exitRelay` | string | `"0"` | `"1"` to enable exit relay mode |
+| `image.tag` | string | `""` | Image tag; defaults to the chart `appVersion` |
+| `image.pullPolicy` | string | `Always` | Image pull policy (`Always` ensures latest patch on restart) |
+| `imagePullSecrets` | list | `[]` | Image pull secret names |
+| `config.orPort` | int | `2123` | OR port — must be open inbound from the internet |
+| `config.ptPort` | int | `2133` | obfs4 PT port — must be open inbound from the internet |
+| `config.email` | string | `""` | **Required.** Operator contact e-mail published in the relay descriptor |
+| `config.ipv4Only` | string | `"1"` | `"1"` = restrict OR port to IPv4 only; `"0"` = dual-stack |
+| `config.exitRelay` | string | `"0"` | `"1"` to enable exit relay (not recommended for bridges) |
 | `config.bridgeRelay` | string | `"1"` | `"1"` to enable bridge relay mode |
-| `persistence.enabled` | bool | `true` | Enable persistent storage for `/var/lib/tor` |
+| `persistence.enabled` | bool | `true` | Persist `/var/lib/tor` via a volumeClaimTemplate |
 | `persistence.size` | string | `2Gi` | PVC size |
-| `persistence.storageClass` | string | `""` | StorageClass (blank = cluster default) |
-| `persistence.existingClaim` | string | `""` | Use an existing PVC |
+| `persistence.storageClass` | string | `""` | StorageClass; blank = cluster default |
+| `persistence.accessMode` | string | `ReadWriteOnce` | PVC access mode |
+| `persistence.existingClaim` | string | `""` | Use an existing PVC instead of creating one |
 | `service.type` | string | `LoadBalancer` | Kubernetes Service type |
-| `service.externalTrafficPolicy` | string | `Local` | Preserve source IP |
-| `service.annotations` | object | `{}` | Extra Service annotations |
+| `service.externalTrafficPolicy` | string | `Local` | Preserve real client source IP |
+| `service.annotations` | object | `{}` | Extra annotations on the Service (e.g. cloud LB annotations) |
+| `replicaCount` | int | `1` | Must remain `1` — multiple replicas sharing one data dir are unsupported |
+| `podSecurityContext.runAsNonRoot` | bool | `true` | Enforce non-root |
+| `podSecurityContext.runAsUser` | int | `101` | debian-tor uid |
+| `podSecurityContext.runAsGroup` | int | `101` | debian-tor gid |
+| `podSecurityContext.fsGroup` | int | `101` | Volume ownership group |
+| `podSecurityContext.seccompProfile.type` | string | `RuntimeDefault` | Seccomp profile |
+| `securityContext.allowPrivilegeEscalation` | bool | `false` | Block privilege escalation |
+| `securityContext.capabilities.drop` | list | `["ALL"]` | Drop all capabilities |
+| `securityContext.capabilities.add` | list | `["NET_BIND_SERVICE"]` | Allow binding low ports |
+| `livenessProbe` | object | `pgrep -x tor` | Liveness probe — checks the tor process is running |
+| `readinessProbe` | object | grep `Bootstrapped 100%` | Readiness probe — ready only after full bootstrap |
 | `resources.requests.cpu` | string | `50m` | CPU request |
 | `resources.requests.memory` | string | `64Mi` | Memory request |
 | `resources.limits.cpu` | string | `500m` | CPU limit |
 | `resources.limits.memory` | string | `256Mi` | Memory limit |
-| `podSecurityContext.runAsUser` | int | `101` | debian-tor uid |
 | `serviceAccount.create` | bool | `true` | Create a ServiceAccount |
-| `replicaCount` | int | `1` | Must stay 1 – see statefulset notes |
+| `serviceAccount.annotations` | object | `{}` | ServiceAccount annotations |
+| `serviceAccount.name` | string | `""` | ServiceAccount name; auto-generated if empty |
+| `nameOverride` | string | `""` | Override the chart name in resource names |
+| `fullnameOverride` | string | `""` | Override the fully-qualified resource name |
+| `podAnnotations` | object | `{}` | Extra pod annotations |
+| `podLabels` | object | `{}` | Extra pod labels |
+| `nodeSelector` | object | `{}` | Node selector constraints |
+| `tolerations` | list | `[]` | Pod tolerations |
+| `affinity` | object | `{}` | Pod affinity rules |
+
+## Troubleshooting
+
+**Pod is stuck in `Pending`**
+- Check `kubectl describe pod -n tor` — most likely no LoadBalancer IP has been
+  assigned, or the PVC cannot be provisioned.
+- Use `service.type=NodePort` or `service.type=ClusterIP` if your cluster does
+  not support LoadBalancer.
+
+**Pod starts but bridge line cannot be retrieved**
+- The bridge has not finished bootstrapping yet. Run
+  `kubectl logs -n tor statefulset/my-bridge-tor-obfs4-bridge -f` and wait
+  for `Bootstrapped 100%`.
+- If the log stops at `< 100%`, check that both ports are open inbound.
+
+**Bridge was working, now users can't connect**
+- Run `get-bridge-line` again — the external IP or port may have changed.
+- If the PVC was deleted, the bridge has a new identity and all users need the
+  new bridge line.
+
+**`config.email` is empty — container exits immediately**
+- Set `config.email` to your operator e-mail:
+  `--set config.email=you@example.org`
+
+## Testing the chart
+
+```bash
+# Lint and render
+helm lint charts/tor-obfs4-bridge
+helm template my-bridge charts/tor-obfs4-bridge --set config.email=test@example.org
+
+# Unit tests (requires helm-unittest plugin — Helm >= 3.18)
+helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.1.1
+helm unittest charts/tor-obfs4-bridge
+
+# Full chart-testing install into a kind cluster
+kind create cluster
+ct install --config ct.yaml
+```
+
+Unit test suites live in [`tests/`](./tests) and run automatically in CI on
+every PR and push to `main`.
 
 ## Source
 
 - Docker image: [zetneteork/docker-tor-obfs4-bridge](https://github.com/zetneteork/docker-tor-obfs4-bridge)
 - Helm chart: [opentreecz/helm](https://github.com/opentreecz/helm)
+- Tor Project: [torproject.org](https://www.torproject.org/)
