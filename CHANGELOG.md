@@ -9,6 +9,17 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed — release pipeline
+- **`release.yaml`: chart-releaser was perpetually packaging pre-bump
+  versions** — the auto-bump step pushes a `[skip ci]` commit, but
+  chart-releaser ran immediately after in the same job against the
+  pre-pull working tree, so the just-bumped `Chart.yaml` version was
+  never packaged or published. Fixed by adding `git pull --ff-only origin main`
+  after the bump commit+push, so the chart-releaser step always packages
+  the latest (bumped) version. This caused `tor-obfs4-bridge` `0.1.4`
+  (the `/var/lib/tor` ownership initContainer fix) to be unreleased
+  despite existing on `main` for multiple release cycles.
+
 ### Fixed — tor-obfs4-bridge
 - **`/var/lib/tor is not owned by this user` crash** — Kubernetes mounts
   PVCs and `emptyDir` volumes owned by root (uid 0). Tor refuses to use a
@@ -19,17 +30,11 @@ Chart versions follow [Semantic Versioning](https://semver.org).
   starts. This is the standard Kubernetes pattern for non-root workloads.
 - `values.yaml`: added `initImage` block (`busybox:1.36`) so the initContainer
   image is configurable.
-
-### Added — tor-obfs4-bridge tests
-- `tests/statefulset_test.yaml`: 5 new initContainer regression tests —
-  `fix-volume-ownership` initContainer present; runs as uid 0; mounts both
-  volume paths; uses busybox image; command contains `chown -R 100:101`.
-
-### Changed — tor-obfs4-bridge documentation
-- `charts/tor-obfs4-bridge/README.md`: added volume-ownership initContainer
-  explanation; added `initImage` to values table; added
-  `/var/lib/tor is not owned` troubleshooting entry.
-- `CHANGELOG.md`: this entry.
+- **Upgrade note:** if you are running `tor-obfs4-bridge` ≤ 0.1.3 and
+  seeing CrashLoopBackOff with `/var/lib/tor is not owned by this user`,
+  run: `helm repo update && helm upgrade <release> opentree/tor-obfs4-bridge`
+  The `fix-volume-ownership` initContainer will chown the existing PVC
+  on the next pod start — no manual PVC deletion required.
 
 ### Fixed — tor-obfs4-bridge
 - **`runAsUser: 101` → `100`** in `values.yaml` — critical bug: `debian-tor`

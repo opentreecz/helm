@@ -49,6 +49,13 @@ jobs:
             git add charts/*/Chart.yaml
             git commit -m "chore(release): auto-bump chart versions [skip ci]"
             git push origin HEAD:main
+            # Pull the bump commit back into the working tree so that
+            # chart-releaser packages the bumped versions, not the pre-bump
+            # versions checked out at the start of this job.
+            # Without this pull, the bump commit is pushed but chart-releaser
+            # still sees the old Chart.yaml versions in the working tree,
+            # causing the newly-bumped version to be perpetually unpublished.
+            git pull --ff-only origin main
           else
             echo "No chart versions needed auto-bumping."
           fi
