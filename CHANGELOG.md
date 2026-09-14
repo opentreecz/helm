@@ -10,6 +10,28 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Fixed — tor-obfs4-bridge
+- **`/var/lib/tor is not owned by this user` crash** — Kubernetes mounts
+  PVCs and `emptyDir` volumes owned by root (uid 0). Tor refuses to use a
+  `DataDirectory` that is not owned by the running user (uid 100). `fsGroup`
+  sets the group but not the owner uid. Fixed by adding a
+  `fix-volume-ownership` `initContainer` (busybox) that runs
+  `chown -R 100:101 /var/lib/tor /var/log/tor` before the main container
+  starts. This is the standard Kubernetes pattern for non-root workloads.
+- `values.yaml`: added `initImage` block (`busybox:1.36`) so the initContainer
+  image is configurable.
+
+### Added — tor-obfs4-bridge tests
+- `tests/statefulset_test.yaml`: 5 new initContainer regression tests —
+  `fix-volume-ownership` initContainer present; runs as uid 0; mounts both
+  volume paths; uses busybox image; command contains `chown -R 100:101`.
+
+### Changed — tor-obfs4-bridge documentation
+- `charts/tor-obfs4-bridge/README.md`: added volume-ownership initContainer
+  explanation; added `initImage` to values table; added
+  `/var/lib/tor is not owned` troubleshooting entry.
+- `CHANGELOG.md`: this entry.
+
+### Fixed — tor-obfs4-bridge
 - **`runAsUser: 101` → `100`** in `values.yaml` — critical bug: `debian-tor`
   in the Debian `tor` package is **uid=100, gid=101**. Running as uid 101
   caused `start-tor.sh: /etc/tor/torrc: Permission denied` because `/etc/tor`

@@ -35,6 +35,14 @@ This chart deploys:
 bridge line. StatefulSet with `volumeClaimTemplate` gives the pod a stable PVC
 bound to the pod identity.
 
+**Volume ownership — initContainer:** Kubernetes mounts PVCs and `emptyDir`
+volumes owned by **root (uid 0)**. Tor explicitly refuses to use a
+`DataDirectory` that is not owned by the running user (uid 100). Since
+`fsGroup` only sets the **group** (not the owner uid), an `initContainer`
+(`fix-volume-ownership`) runs as root before the main container to
+`chown -R 100:101 /var/lib/tor /var/log/tor`. This is the standard Kubernetes
+pattern for fixing volume ownership for non-root workloads.
+
 ## Security defaults
 
 All security hardening is enabled out of the box:
@@ -156,6 +164,9 @@ Share this line with censored users or submit it to
 | `image.repository` | string | `ghcr.io/zetneteork/docker-tor-obfs4-bridge` | Container image repository |
 | `image.tag` | string | `""` | Image tag; defaults to the chart `appVersion` |
 | `image.pullPolicy` | string | `Always` | Image pull policy (`Always` ensures latest patch on restart) |
+| `initImage.repository` | string | `busybox` | Image used by the `fix-volume-ownership` initContainer |
+| `initImage.tag` | string | `1.36` | busybox image tag |
+| `initImage.pullPolicy` | string | `IfNotPresent` | Pull policy for the initContainer image |
 | `imagePullSecrets` | list | `[]` | Image pull secret names |
 | `config.orPort` | int | `2123` | OR port — must be open inbound from the internet |
 | `config.ptPort` | int | `2133` | obfs4 PT port — must be open inbound from the internet |
@@ -204,6 +215,14 @@ Share this line with censored users or submit it to
   assigned, or the PVC cannot be provisioned.
 - Use `service.type=NodePort` or `service.type=ClusterIP` if your cluster does
   not support LoadBalancer.
+
+**Pod crashes with `/var/lib/tor is not owned by this user`**
+- Root cause: Kubernetes mounted the PVC owned by root (uid 0). Tor refuses
+  to use a `DataDirectory` not owned by the process user.
+- This chart includes a `fix-volume-ownership` `initContainer` that runs
+  `chown -R 100:101 /var/lib/tor /var/log/tor` before Tor starts.
+- If you see this error, ensure the initContainer ran successfully:
+  `kubectl logs -n tor <pod> -c fix-volume-ownership`
 
 **Pod crashes with `Permission denied` writing `/etc/tor/torrc`**
 - Root cause: the pod is running as the wrong UID. In the Debian `tor` package,

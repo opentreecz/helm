@@ -37,6 +37,35 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      # Fix volume ownership before the main container starts.
+      # Kubernetes mounts PVCs and emptyDirs owned by root (uid 0).
+      # Tor refuses to use DataDirectory /var/lib/tor unless it is owned
+      # by the running user (debian-tor uid=100).  fsGroup alone sets the
+      # group but not the owner uid.  This initContainer runs as root to
+      # chown both volume mounts to 100:101 so Tor can start cleanly.
+      initContainers:
+        - name: fix-volume-ownership
+          image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          imagePullPolicy: {{ .Values.initImage.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 100:101 /var/lib/tor /var/log/tor
+              chmod 700 /var/lib/tor
+              chmod 750 /var/log/tor
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "DAC_OVERRIDE"]
+          volumeMounts:
+            - name: datadir
+              mountPath: /var/lib/tor
+            - name: logdir
+              mountPath: /var/log/tor
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
