@@ -1,0 +1,39 @@
+apiVersion: v2
+name: mc-router
+type: application
+version: 1.5.0
+appVersion: "0.21.0"
+description: >-
+  Routes Minecraft Java Edition client connections to backend servers based
+  upon the requested server address. Uses the official itzg/mc-router image.
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/itzg/mc-router
+  - https://github.com/itzg/minecraft-server-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: itzg
+    email: itzgeoff@gmail.com
+  - name: gtaylor
+    email: gtaylor@gc-taylor.com
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/mc-router
+    - name: Original chart (itzg/minecraft-server-charts)
+      url: https://github.com/itzg/minecraft-server-charts
+    - name: mc-router source
+      url: https://github.com/itzg/mc-router
+    - name: mc-router Docker Hub
+      url: https://hub.docker.com/r/itzg/mc-router
+  artifacthub.io/images: |
+    - name: mc-router
+      image: docker.io/itzg/mc-router:latest
+keywords:
+  - minecraft
+  - router
+  - game
+  - server

@@ -1,0 +1,14 @@
+service:
+  type: ClusterIP
+
+rconWeb:
+  password: test
+  rconHost: ""
+  rconPort: 0
+
+# Disable probes - no Minecraft server in CI
+readinessProbe:
+  enabled: false
+
+livenessProbe:
+  enabled: false

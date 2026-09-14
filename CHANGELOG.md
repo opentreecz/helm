@@ -10,8 +10,30 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added
-- `CHANGELOG.md` — this file.
-- `SECURITY.md` — vulnerability reporting policy.
+- **8 charts imported** from external repositories (rebased to repo conventions):
+  - `wg-easy` (0.6.3) — WireGuard + web UI, from [slydlake/helm-charts](https://github.com/slydlake/helm-charts)
+  - `wireguard` (0.4.3) — WireGuard server/client, from [slydlake/helm-charts](https://github.com/slydlake/helm-charts)
+  - `wordpress` (3.6.10) — WordPress CMS with optional MariaDB/Redis/Valkey/Memcached subcharts, from [slydlake/helm-charts](https://github.com/slydlake/helm-charts)
+  - `mc-router` (1.5.0) — Minecraft Java router, from [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts)
+  - `minecraft` (5.2.0) — Minecraft Java server, from [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts)
+  - `minecraft-bedrock` (2.9.0) — Minecraft Bedrock server, from [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts)
+  - `minecraft-proxy` (3.10.0) — BungeeCord/Velocity proxy, from [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts)
+  - `rcon-web-admin` (1.2.1) — RCON web admin panel, from [itzg/minecraft-server-charts](https://github.com/itzg/minecraft-server-charts)
+- All imported charts normalized to repo conventions:
+  - `apiVersion: v2` (mc-router/minecraft/minecraft-bedrock/minecraft-proxy upgraded from v1)
+  - Concrete `appVersion` replacing `SeeValues` placeholder
+  - `ci/ct-values.yaml` for kind-installable chart-testing
+  - helm-unittest suites (`tests/*_test.yaml`) — 52 new tests across 16 new suites
+  - Standardized `Chart.yaml` (maintainers include opentreecz; original authors credited; `sources` preserved)
+  - Chart-specific `README.md` (install/upgrade/uninstall/values/testing)
+- Attribution section added to root `README.md`.
+- `lint-test.yaml`: added `helm dependency update` step for OCI subchart dependencies.
+- `build.yaml`: updated lint step to pass `ci/ct-values.yaml` for charts with required values.
+- `release.yaml`: added `helm dependency update` step so chart-releaser packages subcharts correctly.
+
+### Changed
+- `README.md`: updated Available Charts table (10 charts), layout tree, attribution section.
+- `CHANGELOG.md`: this entry.
 
 ### Changed
 - `README.md` — added CI badges, full table of contents, updated automation

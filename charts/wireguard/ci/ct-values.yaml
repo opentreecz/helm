@@ -1,0 +1,13 @@
+# Values for chart-testing (ct) in a kind cluster.
+# WireGuard requires NET_ADMIN capability which is available in kind by default.
+# Using NodePort and a dynamic storageClass to avoid cloud dependencies.
+
+service:
+  type: ClusterIP
+
+# Provide a storageClass that works in kind (standard provisioner).
+wireguard:
+  server:
+    storage:
+      storageClass: "standard"
+      size: "100Mi"

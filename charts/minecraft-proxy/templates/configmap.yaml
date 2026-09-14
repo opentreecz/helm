@@ -1,0 +1,14 @@
+{{- if .Values.minecraftProxy.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "proxy.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "proxy.fullname" . }}
+    chart: "{{ include "chart.fullname" . }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  config.yml: {{ toYaml .Values.minecraftProxy.config | indent 2 }}
+{{- end }}

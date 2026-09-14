@@ -1,0 +1,70 @@
+apiVersion: v2
+name: wordpress
+description: >-
+  Helm chart for WordPress using the official docker.io/wordpress image.
+  Provides automation for installation, user management, plugin installation,
+  and Prometheus metrics. Optional subcharts: MariaDB, Redis, Valkey, Memcached.
+type: application
+version: 3.6.10
+appVersion: "6.9.4"
+icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wordpress/app.png
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/docker-library/wordpress
+  - https://github.com/slydlake/helm-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: slydlake
+    email: sly.dlake@gmail.com
+annotations:
+  artifacthub.io/category: networking
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/wordpress
+    - name: Original chart (slydlake/helm-charts)
+      url: https://github.com/slydlake/helm-charts/tree/main/charts/wordpress
+    - name: Official WordPress image
+      url: https://hub.docker.com/_/wordpress
+    - name: SlyMetrics WordPress plugin
+      url: https://github.com/slydlake/slymetrics
+    - name: Apache Metrics exporter
+      url: https://github.com/Lusitaniae/apache_exporter
+  artifacthub.io/images: |
+    - name: wordpress
+      image: docker.io/wordpress:6.9.4-php8.3-apache
+    - name: wordpress-cli
+      image: docker.io/wordpress:cli-2.12.0-php8.3
+    - name: metrics-apache
+      image: docker.io/lusotycoon/apache-exporter:v1.0.12
+    - name: mariadb
+      image: docker.io/mariadb:12.2.2-noble
+    - name: memcached
+      image: docker.io/memcached:1.6.41
+    - name: redis
+      image: docker.io/redis:8.6.1-trixie
+    - name: valkey
+      image: docker.io/valkey/valkey:9.0.3-trixie
+dependencies:
+  - condition: memcached.enabled
+    name: memcached
+    repository: oci://registry-1.docker.io/cloudpirates
+    version: 0.11.0
+  - condition: redis.enabled
+    name: redis
+    repository: oci://registry-1.docker.io/cloudpirates
+    version: 0.26.5
+  - condition: valkey.enabled
+    name: valkey
+    repository: oci://registry-1.docker.io/cloudpirates
+    version: 0.18.0
+  - condition: mariadb.enabled
+    name: mariadb
+    repository: oci://registry-1.docker.io/cloudpirates
+    version: 0.15.3
+keywords:
+  - wordpress
+  - blog
+  - cms

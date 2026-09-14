@@ -1,0 +1,8 @@
+# Values for chart-testing (ct) in a kind cluster.
+minecraftProxy:
+  serviceType: ClusterIP
+
+# Disable persistence for CI.
+persistence:
+  dataDir:
+    enabled: false

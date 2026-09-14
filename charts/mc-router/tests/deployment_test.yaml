@@ -1,0 +1,26 @@
+suite: mc-router deployment
+templates:
+  - deployment.yaml
+release:
+  name: my-mc-router
+  namespace: test-ns
+tests:
+  - it: renders a Deployment
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: my-mc-router
+
+  - it: uses the itzg/mc-router image
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "itzg/mc-router"
+
+  - it: has correct selector labels
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: mc-router

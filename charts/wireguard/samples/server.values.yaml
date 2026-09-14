@@ -1,0 +1,7 @@
+wireguard:
+  timezone: "Europe/Berlin"
+  server:
+    enabled: true
+    config:
+      address: vpn.example.com
+      peers: "macbook1,iphone1"

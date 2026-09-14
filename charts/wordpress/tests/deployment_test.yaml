@@ -1,0 +1,43 @@
+suite: wordpress deployment
+templates:
+  - deployment.yaml
+  - configmap.yaml
+values:
+  - ci-values.yaml
+release:
+  name: my-wp
+  namespace: test-ns
+tests:
+  # deployment.yaml renders 1 Deployment document
+  - it: renders a Deployment
+    template: deployment.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: my-wp-wordpress
+
+  - it: uses the wordpress image
+    template: deployment.yaml
+    documentIndex: 0
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "wordpress"
+
+  - it: has correct selector labels
+    template: deployment.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: wordpress
+
+  # configmap.yaml renders 2 ConfigMap documents
+  - it: renders 2 ConfigMaps
+    template: configmap.yaml
+    asserts:
+      - hasDocuments:
+          count: 2

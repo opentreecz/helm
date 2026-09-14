@@ -1,0 +1,286 @@
+{{- if ne (printf "%s" .Values.minecraftServer.eula) "FALSE" }}
+apiVersion: apps/v1
+kind: {{ ternary "StatefulSet" "Deployment" .Values.workloadAsStatefulSet }}
+metadata:
+  name: {{ template "minecraft.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- if .Values.deploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := .Values.deploymentAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+  labels:
+    app: {{ template "minecraft.fullname" . }}
+    chart: "{{ include "chart.fullname" . }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  {{- with .Values.deploymentLabels  }}
+  {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.workloadAsStatefulSet }}
+  serviceName: {{ template "minecraft.fullname" . }}
+  updateStrategy:
+    type: {{ .Values.strategyType }}
+  {{- else }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "minecraft.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "minecraft.fullname" . }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+    spec:
+      shareProcessNamespace: {{ .Values.shareProcessNamespace }}
+      {{- if .Values.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.initContainers }}
+      initContainers:
+      {{- toYaml .Values.initContainers | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ template "minecraft.fullname" . }}
+        {{- if .Values.restoreMode }}
+        command:
+          - /bin/bash
+        args:
+          - -s
+          - "while true; do sleep 30; done"
+        {{- end }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        stdin: true
+        tty: true
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        {{- if not .Values.restoreMode }}
+        readinessProbe:
+          exec:
+            command:
+              - mc-monitor
+              - status-bedrock
+              - --host
+              # force health check against IPv4 port
+              - 127.0.0.1
+              - --port
+              - {{ .Values.minecraftServer.serverPort | quote }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+        {{- end }}
+        {{- if not .Values.restoreMode }}
+        livenessProbe:
+          exec:
+            command:
+              - mc-monitor
+              - status-bedrock
+              - --host
+              # force health check against IPv4 port
+              - 127.0.0.1
+              - --port
+              - {{ .Values.minecraftServer.serverPort | quote }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+        {{- end }}
+        {{- if and .Values.startupProbe.enabled (not .Values.restoreMode) }}
+        startupProbe:
+          exec:
+            command:
+              - mc-monitor
+              - status-bedrock
+              - --host
+              # force health check against IPv4 port
+              - 127.0.0.1
+              - --port
+              - {{ .Values.minecraftServer.serverPort | quote }}
+          initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+          failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+          periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+        {{- end }}
+
+      {{- with .Values.envFrom }}
+        envFrom:
+          {{- . | toYaml | nindent 10 }}{{ end }}
+
+        env:
+        - name: EULA
+          value: {{ .Values.minecraftServer.eula | quote }}
+        - name: VERSION
+          value: {{ .Values.minecraftServer.version | quote }}
+        - name: DIFFICULTY
+          value: {{ .Values.minecraftServer.difficulty | quote }}
+        - name: SERVER_NAME
+          value: {{ .Values.minecraftServer.serverName | quote }}
+        - name: WHITE_LIST
+          value: {{ default "" .Values.minecraftServer.whitelist | quote }}
+        - name: WHITE_LIST_USERS
+          value: {{ default "" .Values.minecraftServer.whitelistUsers | quote }}
+        - name: OPS
+          value: {{ default "" .Values.minecraftServer.ops | quote }}
+        - name: MEMBERS
+          value: {{ default "" .Values.minecraftServer.members | quote }}
+        - name: VISITORS
+          value: {{ default "" .Values.minecraftServer.visitors | quote }}
+        - name: ALLOW_CHEATS
+          value: {{ .Values.minecraftServer.cheats | quote }}
+        - name: MAX_PLAYERS
+          value: {{ .Values.minecraftServer.maxPlayers | quote }}
+        - name: VIEW_DISTANCE
+          value: {{ .Values.minecraftServer.viewDistance | quote }}
+        - name: TICK_DISTANCE
+          value: {{ .Values.minecraftServer.tickDistance | quote }}
+        - name: PLAYER_IDLE_TIMEOUT
+          value: {{ .Values.minecraftServer.playerIdleTimeout | quote }}
+        - name: MAX_THREADS
+          value: {{ .Values.minecraftServer.maxThreads | quote }}
+        - name: GAMEMODE
+          value: {{ .Values.minecraftServer.gameMode | quote }}
+        - name: LEVEL_TYPE
+          value: {{ .Values.minecraftServer.levelType | quote }}
+        - name: LEVEL_NAME
+          value: {{ .Values.minecraftServer.levelName | quote }}
+        - name: LEVEL_SEED
+          value: {{ default "" .Values.minecraftServer.levelSeed | quote }}
+        - name: DEFAULT_PLAYER_PERMISSION_LEVEL
+          value: {{ .Values.minecraftServer.defaultPermission | quote }}
+        - name: TEXTUREPACK_REQUIRED
+          value: {{ .Values.minecraftServer.texturepackRequired | quote }}
+        - name: ONLINE_MODE
+          value: {{ .Values.minecraftServer.onlineMode | quote }}
+        - name: EMIT_SERVER_TELEMETRY
+          value: {{ .Values.minecraftServer.emitServerTelemetry | quote }}
+        - name: ENABLE_LAN_VISIBILITY
+          value: {{ .Values.minecraftServer.enableLanVisibility | quote }}
+        - name: SERVER_PORT
+          value: {{ .Values.minecraftServer.serverPort | quote }}
+
+        {{- if .Values.minecraftServer.enableSSH }}
+        - name: ENABLE_SSH
+          value: "true"
+        {{- end }}
+
+        {{- if .Values.minecraftServer.passwordSSH }}
+        - name: RCON_PASSWORD
+          value: {{ .Values.minecraftServer.passwordSSH }}
+        {{- end }}
+
+      {{- range $key, $value := .Values.extraEnv }}
+      {{-   if kindIs "map" $value }}
+      {{-     if hasKey $value "valueFrom" }}
+        - name: {{ $key }}
+          valueFrom:
+            {{- $value.valueFrom | toYaml | nindent 12 }}
+      {{-     end }}
+      {{-   else }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+      {{-   end }}
+      {{- end }}
+
+        ports:
+        - name: minecraft
+          containerPort: {{ .Values.minecraftServer.serverPort }}
+          protocol: UDP
+        {{- if .Values.minecraftServer.enableSSH }}
+        - name: minecraft-ssh
+          containerPort: 2222
+          protocol: TCP
+        {{-   end }}
+
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: datadir
+          mountPath: /data
+        {{- range .Values.extraVolumes }}
+        {{-   if .volumeMounts }}
+        {{-     toYaml .volumeMounts | nindent 8 }}
+        {{-   end }}
+        {{- end }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+      {{- with .Values.sidecarContainers }}
+        {{- tpl . $ | nindent 6 }}
+      {{- end }}
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      {{- if .Values.persistence.dataDir.enabled }}
+      {{- if .Values.persistence.dataDir.existingClaim }}
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.dataDir.existingClaim }}
+      {{- else if (not .Values.workloadAsStatefulSet) }}
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: {{ template "minecraft.fullname" . }}-datadir
+      {{- end -}}
+      {{/* if persistence enabled in stateful set without existing claim, a volume claim template will be defined */}}
+      {{- else }}
+      - name: datadir
+        emptyDir: {}
+      {{- end }}
+      {{- range .Values.extraVolumes }}
+      {{- toYaml .volumes | nindent 6 }}
+      {{- end }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+    {{- end }}
+    {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+    {{- end }}
+    {{- range $key, $value := .Values.extraPodSpec }}
+      {{ $key }}: {{ tpl $value $ }}
+    {{- end }}
+  {{- if .Values.workloadAsStatefulSet }}
+  volumeClaimTemplates:
+    {{- if and .Values.persistence.dataDir.enabled (not .Values.persistence.dataDir.existingClaim) }}
+    - metadata:
+        name: datadir
+        labels:
+          app: {{ template "minecraft.fullname" . }}
+          chart: "{{ include "chart.fullname" . }}"
+          release: "{{ .Release.Name }}"
+          heritage: "{{ .Release.Service }}"
+        annotations:
+        {{- with .Values.persistence.annotations  }}
+        {{ toYaml . | nindent 10 }}
+        {{- end }}
+        {{- if .Values.persistence.storageClass }}
+          volume.beta.kubernetes.io/storage-class: {{ .Values.persistence.storageClass | quote }}
+        {{- else }}
+          volume.alpha.kubernetes.io/storage-class: default
+        {{- end }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.persistence.dataDir.Size | quote }}
+      {{- if .Values.persistence.storageClass }}
+      {{- if (eq "-" .Values.persistence.storageClass) }}
+        storageClassName: ""
+      {{- else }}
+        storageClassName: "{{ .Values.persistence.storageClass }}"
+      {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{ end }}

@@ -1,0 +1,4 @@
+# Values for chart-testing (ct) in a kind cluster.
+services:
+  default:
+    type: ClusterIP

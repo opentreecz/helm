@@ -1,0 +1,30 @@
+suite: minecraft service
+templates:
+  - minecraft-svc.yaml
+release:
+  name: my-mc
+  namespace: test-ns
+set:
+  minecraftServer:
+    eula: "TRUE"
+tests:
+  - it: renders a Service
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: defaults to ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: exposes port 25565 for Minecraft
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: minecraft
+            port: 25565
+            protocol: TCP
+            targetPort: minecraft

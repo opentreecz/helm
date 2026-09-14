@@ -1,0 +1,10 @@
+wordpress:
+  url: "https://ci-test.example.org"
+mariadb:
+  enabled: false
+memcached:
+  enabled: false
+redis:
+  enabled: false
+valkey:
+  enabled: false

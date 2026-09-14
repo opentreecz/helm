@@ -1,0 +1,36 @@
+apiVersion: v2
+name: wireguard
+description: >-
+  Helm chart for WireGuard using the official linuxserver/wireguard image.
+  Supports almost any environment variable and both server and client mode.
+type: application
+version: 0.4.3
+appVersion: "1.0.20250521-r1-ls105"
+icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wireguard/app.png
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/linuxserver/docker-wireguard
+  - https://github.com/slydlake/helm-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: slydlake
+    email: sly.dlake@gmail.com
+annotations:
+  artifacthub.io/category: security
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/wireguard
+    - name: Original chart (slydlake/helm-charts)
+      url: https://github.com/slydlake/helm-charts/tree/main/charts/wireguard
+    - name: linuxserver/wireguard Docker image
+      url: https://github.com/linuxserver/docker-wireguard
+  artifacthub.io/images: |
+    - name: wireguard
+      image: docker.io/linuxserver/wireguard:1.0.20250521-r1-ls105
+keywords:
+  - wireguard
+  - vpn
+  - linuxserver

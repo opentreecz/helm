@@ -1,0 +1,28 @@
+suite: rcon-web-admin service
+templates:
+  - services.yaml
+release:
+  name: my-rcon
+  namespace: test-ns
+tests:
+  - it: renders a Service
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: my-rcon-rcon-web-admin
+
+  - it: defaults to ClusterIP
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: honours NodePort override
+    set:
+      service.type: NodePort
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort

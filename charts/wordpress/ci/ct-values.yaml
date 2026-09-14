@@ -1,0 +1,40 @@
+# Values for chart-testing (ct) in a kind cluster.
+# wordpress.url is required by the values schema.
+# All optional subcharts (mariadb/memcached/redis/valkey) are disabled to
+# avoid needing OCI subchart downloads in the ct install step.
+
+wordpress:
+  url: "http://wordpress.ci-test.local"
+  admin:
+    user: admin
+    password: ci-test-password
+    email: ci@example.org
+
+# Disable all optional subcharts for CI – no OCI registry access needed.
+mariadb:
+  enabled: false
+
+memcached:
+  enabled: false
+
+redis:
+  enabled: false
+
+valkey:
+  enabled: false
+
+# Provide an external DB config so WordPress can start without mariadb.
+externalDatabase:
+  host: "localhost"
+  port: 3306
+  database: wordpress
+  user: wordpress
+  password: ci-test
+
+# Use ClusterIP – no cloud LoadBalancer in kind.
+service:
+  type: ClusterIP
+
+# Disable persistence for CI.
+persistence:
+  enabled: false

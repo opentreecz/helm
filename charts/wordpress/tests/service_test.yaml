@@ -1,0 +1,20 @@
+suite: wordpress service
+templates:
+  - service.yaml
+values:
+  - ci-values.yaml
+release:
+  name: my-wp
+  namespace: test-ns
+tests:
+  - it: renders at least one Service
+    asserts:
+      - isKind:
+          of: Service
+
+  - it: first service is named after the release
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-wp-wordpress

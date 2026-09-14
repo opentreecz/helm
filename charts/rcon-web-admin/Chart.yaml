@@ -1,0 +1,40 @@
+apiVersion: v2
+name: rcon-web-admin
+type: application
+version: 1.2.1
+appVersion: "0.14.1-1"
+description: >-
+  Web-based RCON admin panel for game servers (Minecraft, etc.).
+  Uses the official itzg/rcon-web-admin image.
+home: https://github.com/opentreecz/helm
+sources:
+  - https://github.com/rcon-web-admin/rcon-web-admin
+  - https://github.com/itzg/minecraft-server-charts
+  - https://github.com/opentreecz/helm
+maintainers:
+  - name: opentreecz
+    email: tor@opentree.cz
+  - name: eaglesemanation
+    email: eaglesemanation@gmail.com
+  - name: itzg
+    email: itzgeoff@gmail.com
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: opentree Helm repository
+      url: https://github.com/opentreecz/helm/tree/main/charts/rcon-web-admin
+    - name: Original chart (itzg/minecraft-server-charts)
+      url: https://github.com/itzg/minecraft-server-charts
+    - name: rcon-web-admin source
+      url: https://github.com/rcon-web-admin/rcon-web-admin
+    - name: itzg/rcon Docker Hub
+      url: https://hub.docker.com/r/itzg/rcon
+  artifacthub.io/images: |
+    - name: rcon-web-admin
+      image: docker.io/itzg/rcon-web-admin:0.14.1-1
+keywords:
+  - game
+  - server
+  - rcon
+  - minecraft
+  - admin
