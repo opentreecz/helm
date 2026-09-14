@@ -65,6 +65,15 @@ All security hardening is enabled out of the box:
 > `start-tor.sh: /etc/tor/torrc: Permission denied` and the pod crashes.
 > The chart enforces the correct value; do not override it.
 
+> **PodSecurity `restricted` namespaces:** the `fix-volume-ownership`
+> initContainer runs as `runAsUser: 0` (root) to chown the volume mounts.
+> If your namespace enforces the `restricted` PodSecurity standard, this
+> initContainer will be rejected. In that case either:
+> - Pre-provision the PVC with correct ownership using an external job, or
+> - Use `fsGroupChangePolicy: OnRootMismatch` on the StorageClass / PVC
+>   (supported by some CSI drivers), or
+> - Deploy in a `baseline` namespace (recommended for a public-facing Tor bridge).
+
 ## Prerequisites
 
 - Kubernetes 1.24+
@@ -218,11 +227,24 @@ Share this line with censored users or submit it to
 
 **Pod crashes with `/var/lib/tor is not owned by this user`**
 - Root cause: Kubernetes mounted the PVC owned by root (uid 0). Tor refuses
-  to use a `DataDirectory` not owned by the process user.
-- This chart includes a `fix-volume-ownership` `initContainer` that runs
-  `chown -R 100:101 /var/lib/tor /var/log/tor` before Tor starts.
-- If you see this error, ensure the initContainer ran successfully:
-  `kubectl logs -n tor <pod> -c fix-volume-ownership`
+  to use a `DataDirectory` not owned by the process user (uid 100).
+- This chart (≥ 0.1.4) includes a `fix-volume-ownership` `initContainer` that
+  runs `chown -R 100:101 /var/lib/tor /var/log/tor` before Tor starts.
+- **If you are on ≤ 0.1.3 and seeing this crash:**
+  ```bash
+  helm repo update
+  helm upgrade <release-name> opentree/tor-obfs4-bridge --namespace tor
+  ```
+  The initContainer will chown the existing PVC on the next pod start —
+  no manual PVC deletion required.
+- If you are already on ≥ 0.1.4 and still see this error, check the
+  initContainer ran successfully:
+  ```bash
+  kubectl logs -n tor <pod-name> -c fix-volume-ownership
+  ```
+  If the initContainer itself is blocked (e.g. by PodSecurity `restricted`
+  policy which forbids `runAsUser: 0`), see the note in the
+  [Security defaults](#security-defaults) section.
 
 **Pod crashes with `Permission denied` writing `/etc/tor/torrc`**
 - Root cause: the pod is running as the wrong UID. In the Debian `tor` package,
