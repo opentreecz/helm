@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tor-obfs4-bridge.fullname" . }}
+  labels:
+    {{- include "tor-obfs4-bridge.labels" . | nindent 4 }}
+spec:
+  # A Tor bridge MUST run as a single replica.  Running more than one pod on
+  # the same external IP with the same data directory is unsupported.
+  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ include "tor-obfs4-bridge.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "tor-obfs4-bridge.selectorLabels" . | nindent 6 }}
+  # Recreate avoids two pods sharing the data directory during rolling updates.
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tor-obfs4-bridge.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "tor-obfs4-bridge.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: OR_PORT
+              value: {{ .Values.config.orPort | quote }}
+            - name: PT_PORT
+              value: {{ .Values.config.ptPort | quote }}
+            - name: EMAIL
+              value: {{ .Values.config.email | quote }}
+            - name: TOR_OR_PORT_IPV4
+              value: {{ .Values.config.ipv4Only | quote }}
+            - name: TOR_EXITRELAY
+              value: {{ .Values.config.exitRelay | quote }}
+            - name: TOR_BRIDGERELAY
+              value: {{ .Values.config.bridgeRelay | quote }}
+          ports:
+            - name: orport
+              containerPort: {{ .Values.config.orPort }}
+              protocol: TCP
+            - name: ptport
+              containerPort: {{ .Values.config.ptPort }}
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: datadir
+              mountPath: /var/lib/tor
+            - name: logdir
+              mountPath: /var/log/tor
+      volumes:
+        - name: logdir
+          emptyDir: {}
+        {{- if not .Values.persistence.enabled }}
+        - name: datadir
+          emptyDir: {}
+        {{- else if .Values.persistence.existingClaim }}
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+      spec:
+        accessModes:
+          - {{ .Values.persistence.accessMode | quote }}
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: {{ .Values.persistence.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+  {{- end }}

@@ -1,0 +1,135 @@
+# Default values for tor-obfs4-bridge.
+# Override these in your own values file or with --set on the CLI.
+
+# ---------------------------------------------------------------------------
+# Image
+# ---------------------------------------------------------------------------
+image:
+  repository: ghcr.io/zetneteork/docker-tor-obfs4-bridge
+  pullPolicy: Always
+  # Overrides the image tag; defaults to the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+
+# ---------------------------------------------------------------------------
+# Bridge configuration
+# All six variables are required by start-tor.sh.
+# ---------------------------------------------------------------------------
+config:
+  # OR port – must be reachable from the internet.
+  orPort: 2123
+  # obfs4 pluggable-transport port – must be reachable from the internet.
+  ptPort: 2133
+  # Operator contact e-mail published in the relay descriptor.
+  # Override with --set config.email=you@example.org
+  email: ""
+  # Set to "1" to restrict the OR port to IPv4 only; "0" for dual-stack.
+  ipv4Only: "1"
+  # Set to "1" to enable exit relay mode (not recommended for bridges).
+  exitRelay: "0"
+  # Set to "1" to enable bridge relay mode (should always be "1").
+  bridgeRelay: "1"
+
+# ---------------------------------------------------------------------------
+# Persistence
+# /var/lib/tor holds the bridge identity keys – must survive pod restarts.
+# ---------------------------------------------------------------------------
+persistence:
+  enabled: true
+  # storageClass: ""   # Leave empty to use the cluster default.
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  # Optional: use an existing PVC instead of creating one.
+  existingClaim: ""
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
+service:
+  # LoadBalancer is required for the bridge to receive inbound connections.
+  # Use NodePort if your cluster doesn't support LoadBalancer.
+  type: LoadBalancer
+  # externalTrafficPolicy: Local preserves the real client IP.
+  externalTrafficPolicy: Local
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Replicas
+# A Tor bridge must run as a single replica – see StatefulSet spec.
+# ---------------------------------------------------------------------------
+replicaCount: 1
+
+# ---------------------------------------------------------------------------
+# Security context
+# ---------------------------------------------------------------------------
+podSecurityContext:
+  runAsNonRoot: true
+  # debian-tor uid/gid in the official Debian tor package.
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false   # tor writes state at runtime
+  capabilities:
+    drop: ["ALL"]
+    add: ["NET_BIND_SERVICE"]
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+# ---------------------------------------------------------------------------
+# Probes
+# Tor takes up to ~2 minutes to bootstrap; start-period is generous.
+# ---------------------------------------------------------------------------
+livenessProbe:
+  exec:
+    command: ["pgrep", "-x", "tor"]
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  failureThreshold: 3
+  timeoutSeconds: 5
+
+readinessProbe:
+  exec:
+    command:
+      - sh
+      - -c
+      - "grep -q 'Bootstrapped 100%' /var/log/tor/log 2>/dev/null"
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 10
+  timeoutSeconds: 5
+
+# ---------------------------------------------------------------------------
+# Service account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# ---------------------------------------------------------------------------
+# Scheduling
+# ---------------------------------------------------------------------------
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

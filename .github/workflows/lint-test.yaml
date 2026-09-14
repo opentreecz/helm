@@ -1,6 +1,12 @@
 name: Lint and Test Charts
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'charts/**'
+      - 'ct.yaml'
+      - '.github/workflows/lint-test.yaml'
   pull_request:
     paths:
       - 'charts/**'
@@ -14,6 +20,8 @@ permissions:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    # ct list-changed compares against the target branch; on push to main we
+    # compare the pushed commits, on PRs we compare against the PR base.
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -75,14 +83,20 @@ jobs:
         run: |
           set -euo pipefail
           ran=0
+          failed=0
           for chart in charts/*/; do
+            [[ -f "${chart}Chart.yaml" ]] || continue
             if [ -d "${chart}tests" ]; then
               echo "::group::unittest ${chart}"
-              helm unittest "$chart"
+              if ! helm unittest "$chart"; then failed=1; fi
               echo "::endgroup::"
               ran=1
             fi
           done
           if [ "$ran" -eq 0 ]; then
             echo "No chart unit tests found."
+          fi
+          if [[ "$failed" -ne 0 ]]; then
+            echo "One or more chart unit test suites failed." >&2
+            exit 1
           fi

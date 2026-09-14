@@ -1,0 +1,21 @@
+# Patterns to ignore when building packages.
+# This supports shell glob matching, relative path matching, and
+# negation (prefixed with !). Only files matching .helmignore are ignored.
+
+# Common VCS directories
+.git/
+.gitignore
+
+# Editor artefacts
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# CI values are only needed during chart-testing, not at install time.
+# (Helm does not include ci/ in packaged charts by default, but be explicit.)
+ci/
+
+# Test files – not shipped in the packaged chart.
+tests/

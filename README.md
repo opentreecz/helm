@@ -34,16 +34,18 @@ helm install my-release opentree/example-app
 
 ## Available Charts
 
-| Chart                               | Description                                              |
-| ----------------------------------- | ------------------------------------------------------- |
-| [example-app](./charts/example-app) | A starter chart for deploying a generic web application |
+| Chart                                               | Description                                              |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| [example-app](./charts/example-app)                 | A starter chart for deploying a generic web application |
+| [tor-obfs4-bridge](./charts/tor-obfs4-bridge)       | Tor obfs4 pluggable-transport bridge (StatefulSet + LoadBalancer) |
 
 ## Repository Layout
 
 ```
 .
-├── charts/                  # One directory per chart
-│   └── example-app/         # Example/starter chart
+├── charts/                      # One directory per chart
+│   ├── example-app/             # Example/starter chart
+│   └── tor-obfs4-bridge/        # Tor obfs4 bridge chart
 ├── scripts/
 │   └── bump-chart-versions.sh  # Auto-bump helper used by the release workflow
 ├── ct.yaml                  # chart-testing configuration

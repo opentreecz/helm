@@ -1,0 +1,138 @@
+suite: tor-obfs4-bridge statefulset
+templates:
+  - statefulset.yaml
+release:
+  name: my-bridge
+  namespace: test-ns
+tests:
+  - it: renders a StatefulSet with the expected fullname
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: my-bridge-tor-obfs4-bridge
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: tor-obfs4-bridge
+
+  - it: uses the chart appVersion as default image tag
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "ghcr.io/zetneteork/docker-tor-obfs4-bridge:0\\.4\\.9\\.12"
+
+  - it: honours an explicit image tag override
+    set:
+      image.tag: "custom-tag-1.2.3"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/zetneteork/docker-tor-obfs4-bridge:custom-tag-1.2.3
+
+  - it: sets OR_PORT env var from config.orPort
+    set:
+      config.orPort: 9001
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OR_PORT
+            value: "9001"
+
+  - it: sets PT_PORT env var from config.ptPort
+    set:
+      config.ptPort: 9002
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PT_PORT
+            value: "9002"
+
+  - it: sets EMAIL env var from config.email
+    set:
+      config.email: test@example.org
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EMAIL
+            value: test@example.org
+
+  - it: sets TOR_OR_PORT_IPV4 to 1 by default
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: TOR_OR_PORT_IPV4
+            value: "1"
+
+  - it: exposes orport and ptport container ports
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: orport
+            containerPort: 2123
+            protocol: TCP
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: ptport
+            containerPort: 2133
+            protocol: TCP
+
+  - it: runs as non-root user 101
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 101
+
+  - it: drops all capabilities and adds NET_BIND_SERVICE
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.capabilities.drop[0]
+          value: ALL
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.capabilities.add[0]
+          value: NET_BIND_SERVICE
+
+  - it: creates a volumeClaimTemplate when persistence is enabled
+    asserts:
+      - isNotNull:
+          path: spec.volumeClaimTemplates
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: datadir
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 2Gi
+
+  - it: uses emptyDir for datadir when persistence is disabled
+    set:
+      persistence.enabled: false
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: datadir
+            emptyDir: {}
+
+  - it: uses an existing PVC when existingClaim is set
+    set:
+      persistence.existingClaim: my-existing-pvc
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: datadir
+            persistentVolumeClaim:
+              claimName: my-existing-pvc
