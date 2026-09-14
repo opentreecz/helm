@@ -5,7 +5,7 @@ description: >-
   Provides automation for installation, user management, plugin installation,
   and Prometheus metrics. Optional subcharts: MariaDB, Redis, Valkey, Memcached.
 type: application
-version: 3.6.10
+version: 3.6.11
 appVersion: "6.9.4"
 icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wordpress/app.png
 home: https://github.com/opentreecz/helm

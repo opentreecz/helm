@@ -5,7 +5,7 @@ description: >-
   Uses the official ghcr.io/wg-easy/wg-easy image and supports almost
   any environment variable as well as Init Mode.
 type: application
-version: 0.6.3
+version: 0.6.4
 appVersion: "15.2.2"
 icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wg-easy/app.png
 home: https://github.com/opentreecz/helm
