@@ -37,6 +37,229 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/example-app-0.1.1/example-app-0.1.1.tgz
     version: 0.1.1
+  mc-router:
+  - annotations:
+      artifacthub.io/images: |
+        - name: mc-router
+          image: docker.io/itzg/mc-router:latest
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/mc-router
+        - name: Original chart (itzg/minecraft-server-charts)
+          url: https://github.com/itzg/minecraft-server-charts
+        - name: mc-router source
+          url: https://github.com/itzg/mc-router
+        - name: mc-router Docker Hub
+          url: https://hub.docker.com/r/itzg/mc-router
+    apiVersion: v2
+    appVersion: 0.21.0
+    created: "2026-09-14T16:28:59.928873433Z"
+    description: Routes Minecraft Java Edition client connections to backend servers
+      based upon the requested server address. Uses the official itzg/mc-router image.
+    digest: 8fa4a81d792d5778f458df24961556c90f945ead1c18fc34c91c145912fcfab9
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - minecraft
+    - router
+    - game
+    - server
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: itzgeoff@gmail.com
+      name: itzg
+    - email: gtaylor@gc-taylor.com
+      name: gtaylor
+    name: mc-router
+    sources:
+    - https://github.com/itzg/mc-router
+    - https://github.com/itzg/minecraft-server-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/mc-router-1.5.1/mc-router-1.5.1.tgz
+    version: 1.5.1
+  minecraft:
+  - annotations:
+      artifacthub.io/images: |
+        - name: minecraft-server
+          image: docker.io/itzg/minecraft-server:latest
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/minecraft
+        - name: Original chart (itzg/minecraft-server-charts)
+          url: https://github.com/itzg/minecraft-server-charts
+        - name: itzg/minecraft-server source
+          url: https://github.com/itzg/docker-minecraft-server
+        - name: itzg/minecraft-server Docker Hub
+          url: https://hub.docker.com/r/itzg/minecraft-server
+    apiVersion: v2
+    appVersion: 2024.6.0
+    created: "2026-09-14T16:29:00.10109658Z"
+    description: Minecraft Java Edition server using the official itzg/minecraft-server
+      image. Supports hundreds of server types (Vanilla, Paper, Forge, Fabric, etc.),
+      mods, plugins, backup via rclone, and RCON.
+    digest: dd73f09209283abd9ed03f5849c63fa069c1c6740b557bf41a48874276fce302
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - minecraft
+    - game
+    - server
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: itzgeoff@gmail.com
+      name: itzg
+    - email: gtaylor@gc-taylor.com
+      name: gtaylor
+    - email: yannik@carbongem.com
+      name: bibz87
+    name: minecraft
+    sources:
+    - https://github.com/itzg/docker-minecraft-server
+    - https://github.com/itzg/minecraft-server-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/minecraft-5.2.1/minecraft-5.2.1.tgz
+    version: 5.2.1
+  minecraft-bedrock:
+  - annotations:
+      artifacthub.io/images: |
+        - name: minecraft-bedrock-server
+          image: docker.io/itzg/minecraft-bedrock-server:latest
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/minecraft-bedrock
+        - name: Original chart (itzg/minecraft-server-charts)
+          url: https://github.com/itzg/minecraft-server-charts
+        - name: itzg/minecraft-bedrock-server source
+          url: https://github.com/itzg/docker-minecraft-bedrock-server
+        - name: itzg/minecraft-bedrock-server Docker Hub
+          url: https://hub.docker.com/r/itzg/minecraft-bedrock-server
+    apiVersion: v2
+    appVersion: 1.21.80.3
+    created: "2026-09-14T16:29:00.288687668Z"
+    description: Minecraft Bedrock Edition server using the official itzg/minecraft-bedrock-server
+      image. Supports automatic updates and cross-platform play.
+    digest: b56878194792cffe135935141152613abb22e3ba03e478538098eb6218b87c5d
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - minecraft
+    - bedrock
+    - game
+    - server
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: itzgeoff@gmail.com
+      name: itzg
+    - email: gtaylor@gc-taylor.com
+      name: gtaylor
+    name: minecraft-bedrock
+    sources:
+    - https://github.com/itzg/docker-minecraft-bedrock-server
+    - https://github.com/itzg/minecraft-server-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/minecraft-bedrock-2.9.1/minecraft-bedrock-2.9.1.tgz
+    version: 2.9.1
+  minecraft-proxy:
+  - annotations:
+      artifacthub.io/images: |
+        - name: bungeecord
+          image: docker.io/itzg/bungeecord:latest
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/minecraft-proxy
+        - name: Original chart (itzg/minecraft-server-charts)
+          url: https://github.com/itzg/minecraft-server-charts
+        - name: itzg/bungeecord source
+          url: https://github.com/itzg/docker-bungeecord
+        - name: itzg/bungeecord Docker Hub
+          url: https://hub.docker.com/r/itzg/bungeecord
+    apiVersion: v2
+    appVersion: 2024.6.0
+    created: "2026-09-14T16:29:00.452315566Z"
+    description: Minecraft proxy server supporting BungeeCord, Waterfall, Velocity,
+      and other proxy types. Uses the official itzg/bungeecord image.
+    digest: 93a9b84002ece272cb36d7b5bd409f990e11de892ac2d707a8a3eb2e1c3943af
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - minecraft
+    - proxy
+    - bungeecord
+    - velocity
+    - waterfall
+    - game
+    - server
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: itzgeoff@gmail.com
+      name: itzg
+    - email: hello@chipwolf.uk
+      name: chipwolf
+    - email: gtaylor@gc-taylor.com
+      name: gtaylor
+    name: minecraft-proxy
+    sources:
+    - https://github.com/itzg/docker-bungeecord
+    - https://github.com/itzg/minecraft-server-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/minecraft-proxy-3.10.1/minecraft-proxy-3.10.1.tgz
+    version: 3.10.1
+  rcon-web-admin:
+  - annotations:
+      artifacthub.io/images: |
+        - name: rcon-web-admin
+          image: docker.io/itzg/rcon-web-admin:0.14.1-1
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/rcon-web-admin
+        - name: Original chart (itzg/minecraft-server-charts)
+          url: https://github.com/itzg/minecraft-server-charts
+        - name: rcon-web-admin source
+          url: https://github.com/rcon-web-admin/rcon-web-admin
+        - name: itzg/rcon Docker Hub
+          url: https://hub.docker.com/r/itzg/rcon
+    apiVersion: v2
+    appVersion: 0.14.1-1
+    created: "2026-09-14T16:29:00.701700251Z"
+    description: Web-based RCON admin panel for game servers (Minecraft, etc.). Uses
+      the official itzg/rcon-web-admin image.
+    digest: 43ee3c12107b6046601cb24bd71fcaa43785e9b9274582a6683eed704ef722b9
+    home: https://github.com/opentreecz/helm
+    keywords:
+    - game
+    - server
+    - rcon
+    - minecraft
+    - admin
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: eaglesemanation@gmail.com
+      name: eaglesemanation
+    - email: itzgeoff@gmail.com
+      name: itzg
+    name: rcon-web-admin
+    sources:
+    - https://github.com/rcon-web-admin/rcon-web-admin
+    - https://github.com/itzg/minecraft-server-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/rcon-web-admin-1.2.2/rcon-web-admin-1.2.2.tgz
+    version: 1.2.2
   tor-obfs4-bridge:
   - apiVersion: v2
     appVersion: 0.4.9.12-1-d13.trixie-1
@@ -92,4 +315,159 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/tor-obfs4-bridge-0.1.1/tor-obfs4-bridge-0.1.1.tgz
     version: 0.1.1
-generated: "2026-09-14T16:05:56.436916008Z"
+  wg-easy:
+  - annotations:
+      artifacthub.io/category: security
+      artifacthub.io/images: |
+        - name: wg-easy
+          image: ghcr.io/wg-easy/wg-easy:15.2.2
+      artifacthub.io/license: MIT
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/wg-easy
+        - name: Original chart (slydlake/helm-charts)
+          url: https://github.com/slydlake/helm-charts/tree/main/charts/wg-easy
+        - name: Official wg-easy documentation
+          url: https://wg-easy.github.io/wg-easy/latest/
+    apiVersion: v2
+    appVersion: 15.2.2
+    created: "2026-09-14T16:29:00.872231584Z"
+    description: Helm chart for wg-easy – a WireGuard VPN server with a web UI. Uses
+      the official ghcr.io/wg-easy/wg-easy image and supports almost any environment
+      variable as well as Init Mode.
+    digest: e631e5dac0ba5de0041149954cfccb1df6ad6dce4a0c6d0c268c89b5d5d6cdd6
+    home: https://github.com/opentreecz/helm
+    icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wg-easy/app.png
+    keywords:
+    - wireguard
+    - vpn
+    - wg-easy
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: sly.dlake@gmail.com
+      name: slydlake
+    name: wg-easy
+    sources:
+    - https://github.com/wg-easy/wg-easy
+    - https://github.com/slydlake/helm-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/wg-easy-0.6.4/wg-easy-0.6.4.tgz
+    version: 0.6.4
+  wireguard:
+  - annotations:
+      artifacthub.io/category: security
+      artifacthub.io/images: |
+        - name: wireguard
+          image: docker.io/linuxserver/wireguard:1.0.20250521-r1-ls105
+      artifacthub.io/license: MIT
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/wireguard
+        - name: Original chart (slydlake/helm-charts)
+          url: https://github.com/slydlake/helm-charts/tree/main/charts/wireguard
+        - name: linuxserver/wireguard Docker image
+          url: https://github.com/linuxserver/docker-wireguard
+    apiVersion: v2
+    appVersion: 1.0.20250521-r1-ls105
+    created: "2026-09-14T16:29:01.077405548Z"
+    description: Helm chart for WireGuard using the official linuxserver/wireguard
+      image. Supports almost any environment variable and both server and client mode.
+    digest: 5faca8b937e42be742a125e4680633921883b7705294bc6f13ea16c3d2535e63
+    home: https://github.com/opentreecz/helm
+    icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wireguard/app.png
+    keywords:
+    - wireguard
+    - vpn
+    - linuxserver
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: sly.dlake@gmail.com
+      name: slydlake
+    name: wireguard
+    sources:
+    - https://github.com/linuxserver/docker-wireguard
+    - https://github.com/slydlake/helm-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/wireguard-0.4.4/wireguard-0.4.4.tgz
+    version: 0.4.4
+  wordpress:
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/images: |
+        - name: wordpress
+          image: docker.io/wordpress:6.9.4-php8.3-apache
+        - name: wordpress-cli
+          image: docker.io/wordpress:cli-2.12.0-php8.3
+        - name: metrics-apache
+          image: docker.io/lusotycoon/apache-exporter:v1.0.12
+        - name: mariadb
+          image: docker.io/mariadb:12.2.2-noble
+        - name: memcached
+          image: docker.io/memcached:1.6.41
+        - name: redis
+          image: docker.io/redis:8.6.1-trixie
+        - name: valkey
+          image: docker.io/valkey/valkey:9.0.3-trixie
+      artifacthub.io/license: MIT
+      artifacthub.io/links: |
+        - name: opentree Helm repository
+          url: https://github.com/opentreecz/helm/tree/main/charts/wordpress
+        - name: Original chart (slydlake/helm-charts)
+          url: https://github.com/slydlake/helm-charts/tree/main/charts/wordpress
+        - name: Official WordPress image
+          url: https://hub.docker.com/_/wordpress
+        - name: SlyMetrics WordPress plugin
+          url: https://github.com/slydlake/slymetrics
+        - name: Apache Metrics exporter
+          url: https://github.com/Lusitaniae/apache_exporter
+    apiVersion: v2
+    appVersion: 6.9.4
+    created: "2026-09-14T16:29:01.30146412Z"
+    dependencies:
+    - condition: memcached.enabled
+      name: memcached
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.11.0
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.26.5
+    - condition: valkey.enabled
+      name: valkey
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.18.0
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.15.3
+    description: 'Helm chart for WordPress using the official docker.io/wordpress
+      image. Provides automation for installation, user management, plugin installation,
+      and Prometheus metrics. Optional subcharts: MariaDB, Redis, Valkey, Memcached.'
+    digest: 70eae700cb33c32d2a0a3c89819acdc26c2b28aab866d91c6477007edd0a9a36
+    home: https://github.com/opentreecz/helm
+    icon: https://raw.githubusercontent.com/slydlake/helm-charts/refs/heads/main/charts/wordpress/app.png
+    keywords:
+    - wordpress
+    - blog
+    - cms
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    - email: sly.dlake@gmail.com
+      name: slydlake
+    name: wordpress
+    sources:
+    - https://github.com/docker-library/wordpress
+    - https://github.com/slydlake/helm-charts
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/wordpress-3.6.11/wordpress-3.6.11.tgz
+    version: 3.6.11
+generated: "2026-09-14T16:29:01.301482368Z"
