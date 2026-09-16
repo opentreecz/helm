@@ -8,7 +8,7 @@ description: >-
 type: application
 
 # chart version – bumped automatically by the release workflow (auto-bump).
-version: 0.1.4
+version: 0.1.5
 
 # appVersion is the default container image tag; bump when upgrading Tor.
 appVersion: "0.4.9.12-1-d13.trixie-1"
