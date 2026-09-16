@@ -9,6 +9,17 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed — tor-obfs4-bridge initContainer resilience
+- **`Init:CrashLoopBackOff` on minikube and hostpath storage** — the
+  `fix-volume-ownership` initContainer was running `chown -R 100:101` without
+  `|| true`. On storage backends where `chown` is blocked by the host UID
+  namespace mapping (e.g. minikube hostpath provisioner), the initContainer
+  exited non-zero and the pod looped forever — the same symptom as the earlier
+  `chmod` error but now from `chown` failing.
+  Added `|| true` so the initContainer always exits 0. If `chown` cannot run
+  (storage backend limitation), Tor's own ownership check fires with a clear
+  diagnostic error rather than the init container crash-looping indefinitely.
+
 ### Fixed — tor-obfs4-bridge initContainer
 - **`chmod: Operation not permitted`** in `fix-volume-ownership` initContainer —
   the `chmod 700/750` lines required the `FOWNER` capability which was not
