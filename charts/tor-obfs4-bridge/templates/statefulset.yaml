@@ -50,17 +50,14 @@ spec:
           command:
             - sh
             - -c
-            - |
-              chown -R 100:101 /var/lib/tor /var/log/tor
-              chmod 700 /var/lib/tor
-              chmod 750 /var/log/tor
+            - chown -R 100:101 /var/lib/tor /var/log/tor
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-              add: ["CHOWN", "DAC_OVERRIDE"]
+              add: ["CHOWN"]
           volumeMounts:
             - name: datadir
               mountPath: /var/lib/tor
