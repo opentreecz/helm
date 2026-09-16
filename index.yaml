@@ -263,6 +263,33 @@ entries:
   tor-obfs4-bridge:
   - apiVersion: v2
     appVersion: 0.4.9.12-1-d13.trixie-1
+    created: "2026-09-16T12:08:33.208221714Z"
+    description: Helm chart for running a Tor obfs4 pluggable-transport bridge on
+      Kubernetes. Deploys a StatefulSet with persistent storage, a LoadBalancer Service
+      exposing the OR port and PT port, and hardened security defaults (non-root,
+      capability drop, seccomp RuntimeDefault).
+    digest: 80e4d8f1299fb235a5a0e3dad35f62558ccf7fb7c277b5594684b4146d36995e
+    home: https://github.com/zetneteork/docker-tor-obfs4-bridge
+    keywords:
+    - tor
+    - bridge
+    - obfs4
+    - privacy
+    - anonymity
+    - pluggable-transport
+    maintainers:
+    - email: tor@opentree.cz
+      name: opentreecz
+    name: tor-obfs4-bridge
+    sources:
+    - https://github.com/zetneteork/docker-tor-obfs4-bridge
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/tor-obfs4-bridge-0.1.6/tor-obfs4-bridge-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
+    appVersion: 0.4.9.12-1-d13.trixie-1
     created: "2026-09-16T10:58:33.196983248Z"
     description: Helm chart for running a Tor obfs4 pluggable-transport bridge on
       Kubernetes. Deploys a StatefulSet with persistent storage, a LoadBalancer Service
@@ -551,4 +578,4 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/wordpress-3.6.11/wordpress-3.6.11.tgz
     version: 3.6.11
-generated: "2026-09-16T10:58:33.197001865Z"
+generated: "2026-09-16T12:08:33.208251049Z"
