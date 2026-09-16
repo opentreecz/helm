@@ -9,6 +9,15 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed — tor-obfs4-bridge initContainer
+- **`chmod: Operation not permitted`** in `fix-volume-ownership` initContainer —
+  the `chmod 700/750` lines required the `FOWNER` capability which was not
+  granted (only `CHOWN` and `DAC_OVERRIDE` were). The `chmod` calls are
+  unnecessary: `/var/lib/tor` and `/var/log/tor` already have the correct modes
+  baked into the image (700 and 750 respectively). Removed both `chmod` lines
+  and also dropped the now-redundant `DAC_OVERRIDE` capability — the initContainer
+  now only needs `CHOWN` to run `chown -R 100:101 /var/lib/tor /var/log/tor`.
+
 ### Fixed — release pipeline
 - **`release.yaml`: chart-releaser was perpetually packaging pre-bump
   versions** — the auto-bump step pushes a `[skip ci]` commit, but
