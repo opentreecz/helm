@@ -1,0 +1,12 @@
+---
+name: appimagelauncher
+repo_uid: deb
+keep_versions: 3
+on_conflict: skip
+
+source:
+  type: github
+  owner: TheAssassin
+  repo: AppImageLauncher
+  asset_filter: "*.deb"
+  prerelease: false

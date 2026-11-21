@@ -9,6 +9,15 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added — openrepo-sync bundled projects (0.2.0)
+- The chart now ships all 51 upstream project definitions in
+  `charts/openrepo-sync/projects/`. They are enabled by default
+  (`bundledProjects.enabled`). `bundledProjects.exclude` skips projects by
+  file key or name, and `bundledProjects.repoUid` retargets all of them to
+  another repository. An entry under `projects:` replaces a bundled project
+  with the same key, and a `null` entry removes it.
+- The release notes list the projects that will be synced.
+
 ### Added — openrepo and openrepo-sync charts
 - **`openrepo` 0.1.1** (app 2.11.0): OpenRepo package repository server.
   nginx, django/gunicorn and the Celery worker share one pod and one

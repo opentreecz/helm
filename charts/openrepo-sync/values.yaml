@@ -62,8 +62,20 @@ config:
 # Use an existing ConfigMap holding `config.yaml` instead of `config` above.
 existingConfigConfigMap: ""
 
-# Project definitions, one entry per tracked package. Each key becomes
-# `<key>.yaml` in the projects directory.
+# Project definitions bundled with the chart (charts/openrepo-sync/projects/,
+# mirrored from https://github.com/opentreecz/openrepo-sync/tree/main/projects).
+bundledProjects:
+  enabled: true
+  # Skip bundled projects by file name (without .yaml) or by project `name`,
+  # e.g. [discord-direct-url-latest, spotify-client].
+  exclude: []
+  # Override `repo_uid` (target OpenRepo repository) for all bundled projects.
+  # Empty keeps the value from each file ("deb").
+  repoUid: ""
+
+# Additional project definitions, one entry per tracked package. Each key
+# becomes `<key>.yaml` in the projects directory. An entry with the same key
+# as a bundled project replaces it; set it to null to remove it.
 # See https://github.com/opentreecz/openrepo-sync/tree/main/projects
 projects: {}
 #  github-cli:
@@ -80,7 +92,8 @@ projects: {}
 #      verify_gpg: true
 #      gpg_key: https://cli.github.com/packages/githubcli-archive-keyring.gpg
 
-# Use an existing ConfigMap holding project `*.yaml` files instead of `projects` above.
+# Use an existing ConfigMap holding project `*.yaml` files instead of the
+# bundled projects and `projects` above.
 existingProjectsConfigMap: ""
 
 # Log filter (tracing EnvFilter syntax).

@@ -20,7 +20,7 @@ metadata:
   labels:
     {{- include "openrepo-sync.labels" . | nindent 4 }}
 data:
-  {{- range $name, $project := .Values.projects }}
+  {{- range $name, $project := include "openrepo-sync.projects" . | fromYaml }}
   {{ $name }}.yaml: |
     {{- toYaml $project | nindent 4 }}
   {{- end }}

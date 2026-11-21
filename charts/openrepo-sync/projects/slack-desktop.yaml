@@ -1,0 +1,14 @@
+---
+name: slack-desktop
+repo_uid: deb
+keep_versions: 1
+on_conflict: skip
+
+source:
+  type: deb_repo
+  url: https://packagecloud.io/slacktechnologies/slack/debian
+  suites: jessie
+  components: main
+  package_filter: slack-desktop
+  verify_gpg: true
+  gpg_key: https://packagecloud.io/slacktechnologies/slack/gpgkey

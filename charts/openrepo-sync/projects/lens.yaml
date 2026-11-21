@@ -1,0 +1,14 @@
+---
+name: lens
+repo_uid: deb
+keep_versions: 1
+on_conflict: skip
+
+source:
+  type: deb_repo
+  url: https://downloads.k8slens.dev/apt/debian
+  suites: stable
+  components: main
+  package_filter: lens
+  verify_gpg: true
+  gpg_key: https://downloads.k8slens.dev/keys/gpg

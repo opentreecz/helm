@@ -1,0 +1,12 @@
+---
+name: orca-ide
+repo_uid: deb
+keep_versions: 3
+on_conflict: skip
+
+source:
+  type: github
+  owner: stablyai
+  repo: orca
+  asset_filter: "*.deb"
+  prerelease: false

@@ -16,8 +16,15 @@ Trigger a sync now:
 {{- end }}
 
 OpenRepo server: {{ .Values.openrepo.apiUrl }}
-{{- if and (not .Values.projects) (not .Values.existingProjectsConfigMap) }}
+{{- if .Values.existingProjectsConfigMap }}
+Projects: from ConfigMap {{ .Values.existingProjectsConfigMap }}
+{{- else }}
+{{- $projects := include "openrepo-sync.projects" . | fromYaml }}
+Projects ({{ len $projects }}): {{ keys $projects | sortAlpha | join ", " }}
+{{- if not $projects }}
 
 WARNING: no projects are configured, so nothing will be synced.
-         Add entries under `projects:` or set `existingProjectsConfigMap`.
+         Enable `bundledProjects`, add entries under `projects:` or set
+         `existingProjectsConfigMap`.
+{{- end }}
 {{- end }}

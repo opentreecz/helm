@@ -1,0 +1,66 @@
+suite: openrepo-sync bundled projects
+templates:
+  - configmap.yaml
+release:
+  name: my-release
+set:
+  openrepo.apiKey: secret-token
+tests:
+  - it: ships the bundled project files by default
+    documentIndex: 1
+    asserts:
+      - exists:
+          path: data["github-cli.yaml"]
+      - exists:
+          path: data["docker-ce.yaml"]
+      - matchRegex:
+          path: data["github-cli.yaml"]
+          pattern: "repo_uid: deb"
+
+  - it: excludes bundled projects by file key or project name
+    documentIndex: 1
+    set:
+      bundledProjects.exclude: [docker-ce, claude-desktop]
+    asserts:
+      - notExists:
+          path: data["docker-ce.yaml"]
+      - notExists:
+          path: data["claude.yaml"]
+      - exists:
+          path: data["github-cli.yaml"]
+
+  - it: overrides repo_uid for bundled projects
+    documentIndex: 1
+    set:
+      bundledProjects.repoUid: apt-mirror
+    asserts:
+      - matchRegex:
+          path: data["github-cli.yaml"]
+          pattern: "repo_uid: apt-mirror"
+
+  - it: lets values replace or remove bundled projects
+    documentIndex: 1
+    set:
+      projects:
+        github-cli:
+          name: github-cli
+          repo_uid: custom
+          source:
+            type: github
+            owner: cli
+            repo: cli
+        docker-ce: null
+    asserts:
+      - matchRegex:
+          path: data["github-cli.yaml"]
+          pattern: "repo_uid: custom"
+      - notExists:
+          path: data["docker-ce.yaml"]
+
+  - it: renders no projects when bundling is disabled and none are set
+    documentIndex: 1
+    set:
+      bundledProjects.enabled: false
+    asserts:
+      - isNullOrEmpty:
+          path: data

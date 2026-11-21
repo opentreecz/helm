@@ -76,7 +76,7 @@ helm install my-bridge opentree/tor-obfs4-bridge \
 | [minecraft-proxy](./charts/minecraft-proxy) | 3.10.0 | Minecraft proxy (BungeeCord/Velocity/Waterfall via itzg/bungeecord) |
 | [rcon-web-admin](./charts/rcon-web-admin) | 1.2.1 | Web RCON admin panel for game servers (itzg/rcon-web-admin) |
 | [openrepo](./charts/openrepo) | 0.1.1 | OpenRepo package repository server (APT/RPM/APK/files) with built-in PostgreSQL and Redis |
-| [openrepo-sync](./charts/openrepo-sync) | 0.1.1 | Syncs upstream packages (GitHub, APT/RPM repos, URLs) into OpenRepo on a schedule |
+| [openrepo-sync](./charts/openrepo-sync) | 0.2.0 | Syncs upstream packages (GitHub, APT/RPM repos, URLs) into OpenRepo on a schedule; ships 51 ready-made project definitions |
 
 ---
 

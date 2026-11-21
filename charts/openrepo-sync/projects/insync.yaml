@@ -1,0 +1,13 @@
+---
+name: insync
+repo_uid: deb
+keep_versions: 1
+on_conflict: skip
+
+source:
+  type: deb_repo
+  url: https://apt.insync.io/debian
+  suites: trixie
+  components: [non-free, contrib]
+  package_filter: insync
+  verify_gpg: false

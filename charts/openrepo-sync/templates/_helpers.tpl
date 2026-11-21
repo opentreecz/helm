@@ -199,3 +199,34 @@ checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha25
 {{ toYaml . }}
 {{- end }}
 {{- end }}
+
+{{/*
+Effective project map (file key → project definition), returned as YAML:
+bundled projects from the chart's projects/ directory (minus exclusions),
+overlaid with .Values.projects. A null entry in .Values.projects removes a
+project of the same key.
+*/}}
+{{- define "openrepo-sync.projects" -}}
+{{- $projects := dict }}
+{{- $bundled := .Values.bundledProjects }}
+{{- if $bundled.enabled }}
+{{- range $path, $_ := .Files.Glob "projects/*.yaml" }}
+{{- $key := base $path | trimSuffix ".yaml" }}
+{{- $project := $.Files.Get $path | fromYaml }}
+{{- if not (or (has $key $bundled.exclude) (has $project.name $bundled.exclude)) }}
+{{- if $bundled.repoUid }}
+{{- $_ := set $project "repo_uid" $bundled.repoUid }}
+{{- end }}
+{{- $_ := set $projects $key $project }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $key, $project := .Values.projects }}
+{{- if $project }}
+{{- $_ := set $projects $key $project }}
+{{- else }}
+{{- $_ := unset $projects $key }}
+{{- end }}
+{{- end }}
+{{- toYaml $projects }}
+{{- end }}

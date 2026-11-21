@@ -1,0 +1,12 @@
+---
+name: balena-etcher
+repo_uid: deb
+keep_versions: 3
+on_conflict: skip
+
+source:
+  type: github
+  owner: balena-io
+  repo: etcher
+  asset_filter: "*.deb"
+  prerelease: false
