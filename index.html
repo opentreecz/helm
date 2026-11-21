@@ -88,6 +88,16 @@ helm search repo opentree</pre>
       <td>Web RCON admin panel for game servers (itzg/rcon-web-admin)</td>
       <td><a href="https://github.com/opentreecz/helm/tree/main/charts/rcon-web-admin">opentreecz/helm</a></td>
     </tr>
+    <tr>
+      <td><strong>openrepo</strong></td>
+      <td>OpenRepo package repository server – APT / RPM / APK / files, with built-in PostgreSQL and Redis</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/openrepo">opentreecz/helm</a></td>
+    </tr>
+    <tr>
+      <td><strong>openrepo-sync</strong></td>
+      <td>Syncs upstream packages (GitHub, APT/RPM repos, direct URLs) into OpenRepo on a schedule</td>
+      <td><a href="https://github.com/opentreecz/helm/tree/main/charts/openrepo-sync">opentreecz/helm</a></td>
+    </tr>
   </tbody>
 </table>
 
@@ -107,7 +117,16 @@ helm install my-mc opentree/minecraft \
 helm install my-wp opentree/wordpress \
   --set wordpress.url=https://myblog.example.org \
   --set mariadb.enabled=true \
-  --namespace wordpress --create-namespace</pre>
+  --namespace wordpress --create-namespace
+
+# OpenRepo package server + upstream sync
+helm install openrepo opentree/openrepo \
+  --set superuser.create=true \
+  --namespace openrepo --create-namespace
+helm install openrepo-sync opentree/openrepo-sync \
+  --set openrepo.apiUrl=http://openrepo.openrepo.svc.cluster.local \
+  --set openrepo.apiKey=&lt;token&gt; \
+  --namespace openrepo</pre>
 
 <h2>Links</h2>
 <ul>
