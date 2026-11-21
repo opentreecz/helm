@@ -1,0 +1,27 @@
+{{- if not .Values.existingConfigConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openrepo-sync.configConfigMapName" . }}
+  labels:
+    {{- include "openrepo-sync.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- $openrepo := dict "api_url" "${OPENREPO_API_URL}" "api_key" "${OPENREPO_API_KEY}" }}
+    {{- $config := merge (dict "openrepo" $openrepo) (omit .Values.config "openrepo") }}
+    {{- toYaml $config | nindent 4 }}
+{{- end }}
+---
+{{- if not .Values.existingProjectsConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openrepo-sync.projectsConfigMapName" . }}
+  labels:
+    {{- include "openrepo-sync.labels" . | nindent 4 }}
+data:
+  {{- range $name, $project := .Values.projects }}
+  {{ $name }}.yaml: |
+    {{- toYaml $project | nindent 4 }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,63 @@
+{{- if .Values.beat.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openrepo.fullname" . }}-beat
+  labels:
+    {{- include "openrepo.componentLabels" (dict "ctx" . "component" "beat") | nindent 4 }}
+spec:
+  # Celery beat must run as a single instance or periodic tasks fire twice.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "openrepo.componentSelectorLabels" (dict "ctx" . "component" "beat") | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include "openrepo.secretChecksum" . }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "openrepo.componentLabels" (dict "ctx" . "component" "beat") | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "openrepo.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: beat
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "openrepo.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          workingDir: /app/django
+          command:
+            - sh
+            - -c
+            - exec celery -A openrepo beat -l "$OPENREPO_LOGLEVEL" --schedule=/tmp/celerybeat-schedule
+          env:
+            {{- include "openrepo.env" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.beat.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

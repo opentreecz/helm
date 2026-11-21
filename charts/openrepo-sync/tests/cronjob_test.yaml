@@ -1,0 +1,38 @@
+suite: openrepo-sync cronjob
+templates:
+  - cronjob.yaml
+  - configmap.yaml
+  - secret.yaml
+release:
+  name: my-release
+set:
+  openrepo.apiKey: secret-token
+  mode: cronjob
+tests:
+  - it: renders a CronJob running a one-shot sync
+    template: cronjob.yaml
+    set:
+      cronjob.schedule: "*/30 * * * *"
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.schedule
+          value: "*/30 * * * *"
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Forbid
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.restartPolicy
+          value: Never
+      - notContains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].args
+          content: --schedule
+
+  - it: is not rendered in schedule mode
+    template: cronjob.yaml
+    set:
+      mode: schedule
+    asserts:
+      - hasDocuments:
+          count: 0

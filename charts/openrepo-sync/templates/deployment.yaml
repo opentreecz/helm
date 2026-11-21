@@ -1,0 +1,29 @@
+{{- if eq .Values.mode "schedule" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openrepo-sync.fullname" . }}
+  labels:
+    {{- include "openrepo-sync.labels" . | nindent 4 }}
+spec:
+  # A single scheduler is enough; parallel instances would race on uploads.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "openrepo-sync.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- include "openrepo-sync.podAnnotations" . | nindent 8 }}
+      labels:
+        {{- include "openrepo-sync.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "openrepo-sync.podSpec" . | trim | nindent 6 }}
+{{- else if ne .Values.mode "cronjob" }}
+{{- fail "mode must be either \"schedule\" or \"cronjob\"" }}
+{{- end }}

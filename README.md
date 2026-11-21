@@ -75,6 +75,8 @@ helm install my-bridge opentree/tor-obfs4-bridge \
 | [minecraft-bedrock](./charts/minecraft-bedrock) | 2.9.0 | Minecraft Bedrock Edition server (itzg/minecraft-bedrock-server) |
 | [minecraft-proxy](./charts/minecraft-proxy) | 3.10.0 | Minecraft proxy (BungeeCord/Velocity/Waterfall via itzg/bungeecord) |
 | [rcon-web-admin](./charts/rcon-web-admin) | 1.2.1 | Web RCON admin panel for game servers (itzg/rcon-web-admin) |
+| [openrepo](./charts/openrepo) | 0.1.0 | OpenRepo package repository server (APT/RPM/APK/files) with built-in PostgreSQL and Redis |
+| [openrepo-sync](./charts/openrepo-sync) | 0.1.0 | Syncs upstream packages (GitHub, APT/RPM repos, URLs) into OpenRepo on a schedule |
 
 ---
 
@@ -108,7 +110,9 @@ standardized maintainers, `ci/ct-values.yaml`, helm-unittest suites). The origin
 │   ├── minecraft/                   # Minecraft Java server
 │   ├── minecraft-bedrock/           # Minecraft Bedrock server
 │   ├── minecraft-proxy/             # Minecraft proxy (BungeeCord/Velocity)
-│   └── rcon-web-admin/              # RCON web admin panel
+│   ├── rcon-web-admin/              # RCON web admin panel
+│   ├── openrepo/                    # OpenRepo package repository server
+│   └── openrepo-sync/               # OpenRepo upstream package sync
 │
 │   Each chart contains:
 │   ├── ci/ct-values.yaml            # Override values for chart-testing in kind

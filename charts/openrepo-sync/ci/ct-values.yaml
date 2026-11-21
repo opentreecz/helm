@@ -1,0 +1,17 @@
+# Values used by chart-testing (ct) when installing the chart in CI.
+# There is no OpenRepo server in CI; the scheduler logs the failed sync pass
+# and keeps running, which is enough to validate the manifests.
+openrepo:
+  apiKey: ci-dummy-key
+projects:
+  github-cli:
+    name: github-cli
+    repo_uid: deb
+    keep_versions: 1
+    on_conflict: skip
+    source:
+      type: deb_repo
+      url: https://cli.github.com/packages
+      suites: stable
+      components: main
+      package_filter: gh

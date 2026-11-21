@@ -1,0 +1,16 @@
+# Values used by chart-testing (ct) when installing the chart in CI.
+# Override defaults here to exercise non-default code paths.
+ingress:
+  enabled: true
+  hosts:
+    - host: openrepo.local
+      paths:
+        - path: /
+          pathType: Prefix
+superuser:
+  create: true
+persistence:
+  size: 1Gi
+postgresql:
+  persistence:
+    size: 1Gi

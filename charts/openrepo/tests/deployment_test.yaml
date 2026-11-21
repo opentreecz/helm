@@ -1,0 +1,202 @@
+suite: openrepo app deployment
+templates:
+  - deployment.yaml
+  - configmap-nginx.yaml
+  - secret.yaml
+release:
+  name: my-release
+  namespace: test-ns
+tests:
+  - it: runs nginx, django and worker in a single Recreate pod
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: my-release-openrepo
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+      - lengthEqual:
+          path: spec.template.spec.containers
+          count: 3
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: nginx
+      - equal:
+          path: spec.template.spec.containers[1].name
+          value: django
+      - equal:
+          path: spec.template.spec.containers[2].name
+          value: worker
+
+  - it: defaults the image tag to the chart appVersion
+    template: deployment.yaml
+    chart:
+      appVersion: 9.9.9
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[1].image
+          value: ghcr.io/opentreecz/openrepo:9.9.9
+
+  - it: mounts the data PVC
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: data
+            persistentVolumeClaim:
+              claimName: my-release-openrepo-data
+
+  - it: uses an existing claim
+    template: deployment.yaml
+    set:
+      persistence.existingClaim: my-claim
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: data
+            persistentVolumeClaim:
+              claimName: my-release-openrepo-data
+        not: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: data
+            persistentVolumeClaim:
+              claimName: my-claim
+
+  - it: points at the built-in PostgreSQL and Redis
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_PG_HOSTNAME
+            value: my-release-openrepo-postgresql
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_REDIS_URL
+            value: redis://my-release-openrepo-redis:6379/0
+
+  - it: allows in-cluster Service host names
+    template: deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_ALLOWED_HOSTS
+            value: my-release-openrepo,my-release-openrepo.test-ns,my-release-openrepo.test-ns.svc,my-release-openrepo.test-ns.svc.cluster.local
+
+  - it: derives domain and CSRF origins from the ingress
+    template: deployment.yaml
+    set:
+      ingress.enabled: true
+      ingress.hosts:
+        - host: repo.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      ingress.tls:
+        - secretName: tls
+          hosts: [repo.example.com]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_DOMAIN
+            value: repo.example.com
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_CSRF_TRUSTED_ORIGINS
+            value: https://repo.example.com
+
+  - it: supports external database and redis
+    template: deployment.yaml
+    set:
+      postgresql.enabled: false
+      redis.enabled: false
+      externalDatabase.host: pg.example.com
+      externalDatabase.existingSecret: pg
+      externalRedis.existingSecret: redis
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_PG_HOSTNAME
+            value: pg.example.com
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_PG_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pg
+                key: password
+      - contains:
+          path: spec.template.spec.containers[1].env
+          content:
+            name: OPENREPO_REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                name: redis
+                key: redis-url
+
+  - it: requires external database host when postgresql is disabled
+    template: deployment.yaml
+    set:
+      postgresql.enabled: false
+      externalDatabase.password: x
+    asserts:
+      - failedTemplate:
+          errorMessage: externalDatabase.host is required when postgresql.enabled=false
+
+  - it: passes extra OPENREPO_* settings
+    template: deployment.yaml
+    set:
+      openrepo.env:
+        OPENREPO_CLEANUP_INTERVAL: 3600
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[2].env
+          content:
+            name: OPENREPO_CLEANUP_INTERVAL
+            value: "3600"
+
+  - it: sets worker concurrency
+    template: deployment.yaml
+    set:
+      worker.concurrency: 8
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[2].env
+          content:
+            name: OPENREPO_WORKER_CONCURRENCY
+            value: "8"
+
+  - it: sizes nginx client_max_body_size from maxUploadSize
+    template: configmap-nginx.yaml
+    set:
+      openrepo.maxUploadSize: 524288000
+    asserts:
+      - matchRegex:
+          path: data["nginx.conf"]
+          pattern: client_max_body_size 500M;
+      - matchRegex:
+          path: data["nginx.conf"]
+          pattern: server 127.0.0.1:8000;
+
+  - it: generates the secret key and database password
+    template: secret.yaml
+    asserts:
+      - exists:
+          path: data["secret-key"]
+      - exists:
+          path: data["postgres-password"]
+      - notExists:
+          path: data["redis-url"]

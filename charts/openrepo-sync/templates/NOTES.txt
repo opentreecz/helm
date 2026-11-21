@@ -1,0 +1,23 @@
+openrepo-sync has been deployed in {{ .Values.mode }} mode.
+{{- if eq .Values.mode "schedule" }}
+
+Follow the sync log:
+  kubectl --namespace {{ .Release.Namespace }} logs -f deployment/{{ include "openrepo-sync.fullname" . }}
+
+Trigger an immediate one-shot dry run:
+  kubectl --namespace {{ .Release.Namespace }} exec deployment/{{ include "openrepo-sync.fullname" . }} -- \
+    openrepo-sync --config /config/config.yaml --projects /projects --dry-run
+{{- else }}
+
+Schedule: {{ .Values.cronjob.schedule }}
+
+Trigger a sync now:
+  kubectl --namespace {{ .Release.Namespace }} create job --from=cronjob/{{ include "openrepo-sync.fullname" . }} {{ include "openrepo-sync.fullname" . }}-manual
+{{- end }}
+
+OpenRepo server: {{ .Values.openrepo.apiUrl }}
+{{- if and (not .Values.projects) (not .Values.existingProjectsConfigMap) }}
+
+WARNING: no projects are configured, so nothing will be synced.
+         Add entries under `projects:` or set `existingProjectsConfigMap`.
+{{- end }}

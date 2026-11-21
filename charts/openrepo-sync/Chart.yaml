@@ -1,0 +1,25 @@
+apiVersion: v2
+name: openrepo-sync
+description: Sync packages from upstream sources (GitHub, APT/RPM repos, direct URLs, SourceForge) into an OpenRepo server
+type: application
+
+# version is the chart version. Bump this on every change to the chart (SemVer).
+version: 0.1.0
+
+# appVersion is the version of the application contained in the chart.
+appVersion: "0.2.4"
+
+home: https://github.com/opentreecz/openrepo-sync
+sources:
+  - https://github.com/opentreecz/openrepo-sync
+  - https://github.com/opentreecz/helm
+
+maintainers:
+  - name: opentreecz
+
+keywords:
+  - openrepo
+  - packages
+  - apt
+  - rpm
+  - mirror

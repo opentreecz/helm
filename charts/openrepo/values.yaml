@@ -1,0 +1,221 @@
+# Default values for openrepo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+#
+# Architecture (all app containers use the same image):
+#   Deployment "<fullname>"       nginx (8080) + django/gunicorn (8000) + celery worker
+#                                 sharing the /var/lib/openrepo data volume
+#   Deployment "<fullname>-beat"  celery beat (periodic task scheduler)
+#   StatefulSet "<fullname>-postgresql"  (optional, postgresql.enabled)
+#   Deployment  "<fullname>-redis"       (optional, redis.enabled)
+
+image:
+  repository: ghcr.io/opentreecz/openrepo
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+openrepo:
+  # Public host name (and optional port) clients use to reach OpenRepo. Used
+  # for ALLOWED_HOSTS and for the repository URLs shown in the UI.
+  # Defaults to the first ingress host, or "localhost:8080" without ingress.
+  domain: ""
+  # Extra Django ALLOWED_HOSTS. The in-cluster Service names are always added.
+  allowedHosts: []
+  # Trusted origins for CSRF (e.g. https://repo.example.com). Defaults to the
+  # ingress hosts (https when listed under ingress.tls, otherwise http).
+  csrfTrustedOrigins: []
+  # Django secret key. Generated (and kept across upgrades) when empty.
+  secretKey: ""
+  # Use an existing Secret for the secret key (key: existingSecretKey).
+  existingSecret: ""
+  existingSecretKey: secret-key
+  debug: false
+  logLevel: INFO
+  # Max upload size in bytes (also applied to nginx client_max_body_size).
+  maxUploadSize: 2147483648
+  # Any other OPENREPO_* setting, passed as environment variables to django,
+  # worker and beat, e.g. OPENREPO_CLEANUP_INTERVAL: "86400".
+  # See https://github.com/opentreecz/openrepo/blob/main/.env.example
+  env: {}
+  # Additional raw env entries (supports valueFrom).
+  extraEnv: []
+
+# Optionally create a Django superuser once the app is up (post-install/upgrade
+# hook Job). Existing users are left untouched.
+superuser:
+  create: false
+  username: admin
+  email: admin@example.com
+  # Generated when empty; read it back from the chart Secret (key superuser-password).
+  password: ""
+  # Use an existing Secret for the password (key: existingSecretPasswordKey).
+  existingSecret: ""
+  existingSecretPasswordKey: superuser-password
+
+nginx:
+  resources: {}
+  livenessProbe:
+    httpGet:
+      path: /health/
+      port: http
+    periodSeconds: 30
+  readinessProbe:
+    httpGet:
+      path: /health/
+      port: http
+    periodSeconds: 10
+
+django:
+  # gunicorn is started by the image's run_openrepoweb script, which first
+  # applies database migrations.
+  resources: {}
+  startupProbe:
+    tcpSocket:
+      port: django
+    periodSeconds: 10
+    failureThreshold: 60
+  livenessProbe:
+    tcpSocket:
+      port: django
+    periodSeconds: 30
+  readinessProbe:
+    httpGet:
+      path: /api/health/
+      port: django
+      httpHeaders:
+        - name: Host
+          value: localhost
+    periodSeconds: 15
+    timeoutSeconds: 5
+
+worker:
+  concurrency: 4
+  resources: {}
+  livenessProbe:
+    exec:
+      command: ["sh", "-c", "cd /app/django && celery -A openrepo inspect ping -d celery@$HOSTNAME >/dev/null 2>&1"]
+    initialDelaySeconds: 60
+    periodSeconds: 60
+    timeoutSeconds: 20
+    failureThreshold: 3
+
+beat:
+  enabled: true
+  resources: {}
+
+persistence:
+  # Holds packages, repo metadata (www/), GPG keyrings and caches.
+  # nginx, django and worker share it inside a single pod, so ReadWriteOnce works.
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+  annotations: {}
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # Large package uploads need a higher body size limit, e.g. for ingress-nginx:
+    # nginx.ingress.kubernetes.io/proxy-body-size: "2048m"
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  hosts:
+    - host: openrepo.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: openrepo-tls
+  #    hosts:
+  #      - openrepo.local
+
+# Built-in PostgreSQL. Disable to use externalDatabase.
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    username: openrepo
+    database: openrepo
+    # Generated (and kept across upgrades) when empty. Only applied when the
+    # database is first initialised.
+    password: ""
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+externalDatabase:
+  host: ""
+  port: 5432
+  database: openrepo
+  username: openrepo
+  password: ""
+  # Use an existing Secret for the password.
+  existingSecret: ""
+  existingSecretPasswordKey: password
+  connMaxAge: 300
+
+# Built-in Redis (Celery broker). Disable to use externalRedis.
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+externalRedis:
+  # Full Redis URL, e.g. redis://:password@redis:6379/0
+  url: ""
+  # Use an existing Secret holding the full URL.
+  existingSecret: ""
+  existingSecretUrlKey: redis-url
+
+# Additional volumes / mounts for the app pod (mounts apply to django and worker).
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,148 @@
+# Default values for openrepo-sync.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: ghcr.io/opentreecz/openrepo-sync
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is "v" + the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# How the sync runs:
+#   schedule — long-running Deployment using the built-in scheduler
+#              (`--schedule`, interval taken from config.schedule.interval)
+#   cronjob  — Kubernetes CronJob running a one-shot sync on cronjob.schedule
+mode: schedule
+
+cronjob:
+  schedule: "0 3 * * *"
+  timeZone: ""
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: null
+  backoffLimit: 0
+  activeDeadlineSeconds: null
+  suspend: false
+
+# Extra CLI arguments appended to the command (e.g. ["--dry-run"], ["--verbose"]).
+extraArgs: []
+
+openrepo:
+  # Base URL of the OpenRepo server (no trailing slash). When OpenRepo runs in
+  # the same cluster you can use its Service, e.g. http://openrepo.openrepo.svc.cluster.local
+  apiUrl: "https://openrepo.example.com"
+  # API token (OpenRepo web UI → user profile). Stored in a Secret created by
+  # this chart. Ignored when existingSecret is set.
+  apiKey: ""
+  # Use an existing Secret holding the API token instead.
+  existingSecret: ""
+  existingSecretKey: api-key
+
+# Global config.yaml rendered into a ConfigMap. `openrepo.api_url` and
+# `openrepo.api_key` are injected from the values above via environment
+# variables, so they do not need to be set here.
+# See https://github.com/opentreecz/openrepo-sync/blob/main/config.yaml.example
+config:
+  download_dir: /tmp/openrepo-sync
+  arch_filter: amd64
+  schedule:
+    enabled: true
+    interval: 24h
+    run_on_start: true
+  cleanup:
+    local: true
+    local_min_age: 1h
+    server: "off"
+
+# Use an existing ConfigMap holding `config.yaml` instead of `config` above.
+existingConfigConfigMap: ""
+
+# Project definitions, one entry per tracked package. Each key becomes
+# `<key>.yaml` in the projects directory.
+# See https://github.com/opentreecz/openrepo-sync/tree/main/projects
+projects: {}
+#  github-cli:
+#    name: github-cli
+#    repo_uid: deb
+#    keep_versions: 3
+#    on_conflict: skip
+#    source:
+#      type: deb_repo
+#      url: https://cli.github.com/packages
+#      suites: stable
+#      components: main
+#      package_filter: gh
+#      verify_gpg: true
+#      gpg_key: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+
+# Use an existing ConfigMap holding project `*.yaml` files instead of `projects` above.
+existingProjectsConfigMap: ""
+
+# Log filter (tracing EnvFilter syntax).
+logLevel: info
+timezone: UTC
+
+# Extra environment variables for the container (e.g. GITHUB_TOKEN from a Secret).
+extraEnv: []
+# - name: GITHUB_TOKEN
+#   valueFrom:
+#     secretKeyRef:
+#       name: github-token
+#       key: token
+extraEnvFrom: []
+
+# Scratch space for package downloads (mounted at /tmp). Files are deleted
+# right after upload, but large packages need room while in flight.
+downloadVolume:
+  sizeLimit: 10Gi
+  medium: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources: {}
+  # limits:
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 50m
+  #   memory: 128Mi
+
+# Additional volumes on the output pod definition.
+volumes: []
+# Additional volumeMounts on the output container definition.
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

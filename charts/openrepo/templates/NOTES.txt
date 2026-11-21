@@ -1,0 +1,32 @@
+OpenRepo {{ .Chart.AppVersion }} has been deployed.
+
+1. Get the application URL:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "openrepo.fullname" . }} 8080:{{ .Values.service.port }}
+  echo "Visit http://localhost:8080"
+{{- end }}
+
+   In-cluster API URL (e.g. for openrepo-sync):
+     http://{{ include "openrepo.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local{{ if ne (int .Values.service.port) 80 }}:{{ .Values.service.port }}{{ end }}
+
+2. Admin user:
+{{- if .Values.superuser.create }}
+   Username: {{ .Values.superuser.username }}
+   Password:
+     kubectl --namespace {{ .Release.Namespace }} get secret {{ default (include "openrepo.secretName" .) .Values.superuser.existingSecret }} \
+       -o jsonpath='{.data.{{ ternary .Values.superuser.existingSecretPasswordKey "superuser-password" (not (empty .Values.superuser.existingSecret)) }}}' | base64 -d; echo
+{{- else }}
+   Create one with:
+     kubectl --namespace {{ .Release.Namespace }} exec -it deploy/{{ include "openrepo.fullname" . }} -c django -- \
+       /app/django/manage.py createsuperuser
+{{- end }}
+{{- if not .Values.persistence.enabled }}
+
+WARNING: persistence is disabled — packages and repository data are lost when the pod restarts.
+{{- end }}

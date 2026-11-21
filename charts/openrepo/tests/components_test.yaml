@@ -1,0 +1,84 @@
+suite: openrepo supporting components
+templates:
+  - deployment-beat.yaml
+  - postgresql.yaml
+  - redis.yaml
+  - service.yaml
+  - job-superuser.yaml
+release:
+  name: my-release
+tests:
+  - it: renders a single beat instance
+    template: deployment-beat.yaml
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: beat
+
+  - it: can disable beat
+    template: deployment-beat.yaml
+    set:
+      beat.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders PostgreSQL Service and StatefulSet
+    template: postgresql.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+      - isKind:
+          of: StatefulSet
+        documentIndex: 1
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 8Gi
+        documentIndex: 1
+
+  - it: skips PostgreSQL and Redis when disabled
+    set:
+      postgresql.enabled: false
+      redis.enabled: false
+      externalDatabase.host: pg
+      externalDatabase.password: x
+      externalRedis.url: redis://r:6379/0
+    templates:
+      - postgresql.yaml
+      - redis.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: exposes the web Service on port 80 targeting nginx
+    template: service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+      - equal:
+          path: spec.selector["app.kubernetes.io/component"]
+          value: web
+
+  - it: creates the superuser hook job only when enabled
+    template: job-superuser.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders the superuser hook job
+    template: job-superuser.yaml
+    set:
+      superuser.create: true
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-install,post-upgrade

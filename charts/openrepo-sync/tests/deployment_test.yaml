@@ -1,0 +1,144 @@
+suite: openrepo-sync deployment
+templates:
+  - deployment.yaml
+  - configmap.yaml
+  - secret.yaml
+release:
+  name: my-release
+  namespace: test-ns
+set:
+  openrepo.apiKey: secret-token
+tests:
+  - it: renders a single-replica Deployment in schedule mode
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: my-release-openrepo-sync
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value: [--schedule, --config, /config/config.yaml, --projects, /projects]
+
+  - it: defaults the image tag to v + appVersion
+    template: deployment.yaml
+    chart:
+      appVersion: 1.2.3
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/opentreecz/openrepo-sync:v1.2.3
+
+  - it: honours an explicit image tag
+    template: deployment.yaml
+    set:
+      image.tag: latest
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/opentreecz/openrepo-sync:latest
+
+  - it: injects the API URL and key from the Secret
+    template: deployment.yaml
+    set:
+      openrepo.apiUrl: http://openrepo.repo.svc
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OPENREPO_API_URL
+            value: http://openrepo.repo.svc
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OPENREPO_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: my-release-openrepo-sync
+                key: api-key
+
+  - it: uses an existing Secret when configured
+    template: deployment.yaml
+    set:
+      openrepo.apiKey: ""
+      openrepo.existingSecret: my-secret
+      openrepo.existingSecretKey: token
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OPENREPO_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: token
+
+  - it: appends extraArgs
+    template: deployment.yaml
+    set:
+      extraArgs: [--dry-run]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --dry-run
+
+  - it: is not rendered in cronjob mode
+    template: deployment.yaml
+    set:
+      mode: cronjob
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: rejects an unknown mode
+    template: deployment.yaml
+    set:
+      mode: bogus
+    asserts:
+      - failedTemplate:
+          errorMessage: mode must be either "schedule" or "cronjob"
+
+  - it: requires an API key
+    template: secret.yaml
+    set:
+      openrepo.apiKey: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: openrepo.apiKey is required (or set openrepo.existingSecret)
+
+  - it: renders config.yaml with API settings taken from the environment
+    template: configmap.yaml
+    documentIndex: 0
+    asserts:
+      - matchRegex:
+          path: data["config.yaml"]
+          pattern: "api_key: \\$\\{OPENREPO_API_KEY\\}"
+      - matchRegex:
+          path: data["config.yaml"]
+          pattern: "interval: 24h"
+
+  - it: renders one file per project
+    template: configmap.yaml
+    documentIndex: 1
+    set:
+      projects:
+        curl:
+          name: curl
+          repo_uid: deb
+          source:
+            type: github
+            owner: curl
+            repo: curl
+    asserts:
+      - exists:
+          path: data["curl.yaml"]
+      - matchRegex:
+          path: data["curl.yaml"]
+          pattern: "repo_uid: deb"

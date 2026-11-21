@@ -1,0 +1,27 @@
+apiVersion: v2
+name: openrepo
+description: OpenRepo — self-hosted APT, RPM, APK and generic package repository server with a web UI and REST API
+type: application
+
+# version is the chart version. Bump this on every change to the chart (SemVer).
+version: 0.1.0
+
+# appVersion is the version of the application contained in the chart.
+appVersion: "2.11.0"
+
+home: https://github.com/opentreecz/openrepo
+sources:
+  - https://github.com/opentreecz/openrepo
+  - https://github.com/opentreecz/helm
+
+maintainers:
+  - name: opentreecz
+
+keywords:
+  - openrepo
+  - repository
+  - apt
+  - deb
+  - rpm
+  - apk
+  - packages
