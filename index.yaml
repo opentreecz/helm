@@ -216,6 +216,56 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/minecraft-proxy-3.10.1/minecraft-proxy-3.10.1.tgz
     version: 3.10.1
+  openrepo:
+  - apiVersion: v2
+    appVersion: 2.11.0
+    created: "2026-11-21T08:50:37.317392516Z"
+    description: OpenRepo — self-hosted APT, RPM, APK and generic package repository
+      server with a web UI and REST API
+    digest: 3d7fb442d3fec55dbabb5bd9cc24d815bd637675bc44f323f6585edd99b86a55
+    home: https://github.com/opentreecz/openrepo
+    keywords:
+    - openrepo
+    - repository
+    - apt
+    - deb
+    - rpm
+    - apk
+    - packages
+    maintainers:
+    - name: opentreecz
+    name: openrepo
+    sources:
+    - https://github.com/opentreecz/openrepo
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/openrepo-0.1.1/openrepo-0.1.1.tgz
+    version: 0.1.1
+  openrepo-sync:
+  - apiVersion: v2
+    appVersion: 0.2.4
+    created: "2026-11-21T08:50:37.679349863Z"
+    description: Sync packages from upstream sources (GitHub, APT/RPM repos, direct
+      URLs, SourceForge) into an OpenRepo server
+    digest: e347e29b5c127d2e1bccbbb384e770f72ec6c563934c63ea28ffe031868afdcf
+    home: https://github.com/opentreecz/openrepo-sync
+    keywords:
+    - openrepo
+    - packages
+    - apt
+    - rpm
+    - mirror
+    maintainers:
+    - name: opentreecz
+    name: openrepo-sync
+    sources:
+    - https://github.com/opentreecz/openrepo-sync
+    - https://github.com/opentreecz/helm
+    type: application
+    urls:
+    - https://github.com/opentreecz/helm/releases/download/openrepo-sync-0.1.1/openrepo-sync-0.1.1.tgz
+    version: 0.1.1
   rcon-web-admin:
   - annotations:
       artifacthub.io/images: |
@@ -578,4 +628,4 @@ entries:
     urls:
     - https://github.com/opentreecz/helm/releases/download/wordpress-3.6.11/wordpress-3.6.11.tgz
     version: 3.6.11
-generated: "2026-09-16T12:08:33.208251049Z"
+generated: "2026-11-21T08:50:37.679371153Z"
