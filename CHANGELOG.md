@@ -10,7 +10,7 @@ Chart versions follow [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added — openrepo and openrepo-sync charts
-- **`openrepo` 0.1.0** (app 2.11.0): OpenRepo package repository server.
+- **`openrepo` 0.1.1** (app 2.11.0): OpenRepo package repository server.
   nginx, django/gunicorn and the Celery worker share one pod and one
   `ReadWriteOnce` data volume. Celery beat runs as its own single-replica
   Deployment. The chart includes PostgreSQL 16 and Redis 7, and both can be
@@ -18,7 +18,7 @@ Chart versions follow [Semantic Versioning](https://semver.org).
   generated and kept across upgrades. Django `ALLOWED_HOSTS` and CSRF origins
   are derived from the ingress and in-cluster Service names. An optional
   post-install hook creates a superuser.
-- **`openrepo-sync` 0.1.0** (app 0.2.4): syncs upstream packages into
+- **`openrepo-sync` 0.1.1** (app 0.2.4): syncs upstream packages into
   OpenRepo. It runs either as a long-running scheduler Deployment or as a
   Kubernetes CronJob. `config.yaml` and the project files come from values or
   existing ConfigMaps, and the API key is stored in a Secret. The container
